@@ -1,6 +1,5 @@
 import logging
 import sys
-from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from llama_index.prompts.prompts import SimpleInputPrompt
 from llama_index import ServiceContext, SimpleDirectoryReader, VectorStoreIndex, LangchainEmbedding
 from llama_index.llm_predictor import HuggingFaceLLMPredictor
@@ -17,7 +16,7 @@ query_wrapper_prompt = SimpleInputPrompt(
     "### Instruction:\n{query_str}\n\n### Response:"
 )
 
-hf_predictor = HuggingFaceLLMPredictor(
+camel_5b_hf_predictor = HuggingFaceLLMPredictor(
     max_input_size=2048,
     max_new_tokens=256,
     generate_kwargs={"temperature": 0.01, "do_sample": False},
@@ -31,10 +30,5 @@ hf_predictor = HuggingFaceLLMPredictor(
     model_kwargs={"offload_folder": "offload"},
 )
 
-embed_model = LangchainEmbedding(
-    HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
-)
+__all__ = ["camel_5b_hf_predictor"]
 
-service_context = ServiceContext.from_defaults(
-    chunk_size=512, llm_predictor=hf_predictor, embed_model=embed_model
-)
