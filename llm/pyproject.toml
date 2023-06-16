@@ -14,6 +14,7 @@ sentence-transformers = "^2.2.2"
 accelerate = "^0.20.3"
 gpt4all = "^0.3.4"
 torch = {url = "https://download.pytorch.org/whl/cpu/torch-2.0.1%2Bcpu-cp310-cp310-linux_x86_64.whl"}
+hypsibius-slack = {path = "../hypsibius-slack", develop = true}
 
 
 [tool.poetry.group.dev.dependencies]
