@@ -1,4 +1,3 @@
-from dataclasses import asdict
 from typing import Dict
 from hypsibius_slack.models import Message
 from llama_index.data_structs.node import Node
@@ -6,7 +5,7 @@ from ..core.service_context import get_service_context
 from ..core.indexes.vector import create_index, load_index as load_vector_index
 from ..core.embeddings.all_mpnet_base_v2 import all_mpnet_base_v2_embed_model
 from ..core.retrievers.default import get_retriever
-from hypsibius_slack import collect
+from hypsibius_slack import get_collect
 from datetime import datetime as dt
 
 index = None
@@ -35,6 +34,7 @@ def get_node_id(m: Message) -> str:
 
 
 async def build_index():
+    collect = get_collect()
     global index, retriever
     nodes: Dict[str, Node] = dict()
     start = dt.now()
