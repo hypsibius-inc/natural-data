@@ -90,4 +90,4 @@ def load_index():
     retriever = get_retriever(index, 5)
 
 
-__all__ = ["index", "retriever", "build_index", "load_index"]
+__all__ = ["index", "retriever", "build_index", "load_index", "format_with_context"]
