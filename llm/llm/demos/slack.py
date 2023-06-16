@@ -1,9 +1,10 @@
 from typing import Dict
 from hypsibius_slack.models import Message
 from llama_index.data_structs.node import Node
+from llama_index.indices.base import BaseIndex
 from ..core.service_context import get_service_context
 from ..core.indexes.vector import create_index, load_index as load_vector_index
-from ..core.embeddings.all_mpnet_base_v2 import all_mpnet_base_v2_embed_model
+from ..core.embeddings.all_minilm_l6_v2 import all_MiniLM_L6_v2_embed_model
 from ..core.retrievers.default import get_retriever
 from hypsibius_slack import get_collect
 from datetime import datetime as dt
@@ -14,26 +15,26 @@ retriever = None
 
 def format_with_context(message: Message) -> str:
     return f"""
-    At {message.ts.strftime("%c")}, {message.author.name} said "{message.text}".
-    This was said in {message.conversation.name}.
+    At {message.ts.strftime("%c")}, @{message.author.id} said "{message.text}".
+    This was said in channel "{message.conversation.name}".
     {
-        f'''This was in reply to {
-            message.prev_msg.author.name
+        f'''This was in reply to @{
+            message.prev_msg.author.id
         } saying "{message.prev_msg.text}".'''
         if message.prev_msg else ""
     }{
         f'''They were both part of a larger conversation, with the topic: "{
             message.post.text
-        }" created by {message.post.author.name}.''' if message.post else ""
+        }" created by @{message.post.author.id}.''' if message.post else ""
     }
-    """
+    """.strip()
 
 
 def get_node_id(m: Message) -> str:
     return f"{m.author.name}{m.ts.timestamp()}"
 
 
-async def build_index():
+async def build_index() -> BaseIndex:
     collect = get_collect()
     global index, retriever
     nodes: Dict[str, Node] = dict()
@@ -74,20 +75,22 @@ async def build_index():
     index_start = dt.now()
     index = create_index(
         list(nodes.values()),
-        get_service_context(embed_model=all_mpnet_base_v2_embed_model),
+        get_service_context(embed_model=all_MiniLM_L6_v2_embed_model),
     )
     print(
         f"Index creation took {int((dt.now() - index_start).total_seconds())} seconds"
     )
     retriever = get_retriever(index, 5)
+    return index
 
 
-def load_index():
+def load_index() -> BaseIndex:
     global index, retriever
     index = load_vector_index(
-        get_service_context(embed_model=all_mpnet_base_v2_embed_model)
+        get_service_context(embed_model=all_MiniLM_L6_v2_embed_model)
     )
     retriever = get_retriever(index, 5)
+    return index
 
 
 __all__ = ["index", "retriever", "build_index", "load_index", "format_with_context"]
