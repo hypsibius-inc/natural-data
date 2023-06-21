@@ -13,6 +13,6 @@ def create_index(nodes: Sequence[Node], service_context: ServiceContext, storage
     return index
 
 
-def load_index(storage_location=DEFAULT_STORAGE_LOCATION):
+def load_index(service_context: ServiceContext, storage_location=DEFAULT_STORAGE_LOCATION):
     storage_context = StorageContext.from_defaults(persist_dir=storage_location)
     return load_index_from_storage(storage_context, service_context=service_context)

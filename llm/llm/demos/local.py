@@ -70,7 +70,7 @@ retriever = get_retriever(index, 2)
 def speak():
     data = input("Type 'exit' to stop the conversation\nYou: ")
     while data != "exit":
-        print(f"Bot: ${engine.chat(data)}")
+        print(f"Bot: {engine.chat(data)}")
         data = input("You: ")
 
 def label(text: str) -> dict:
