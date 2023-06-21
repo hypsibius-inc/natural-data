@@ -3,7 +3,9 @@ import environ
 
 @environ.config(prefix="SLACK")
 class AppConfig:
-    api_token = environ.var()
+    user_token = environ.var()
+    bot_token = environ.var()
+    app_token = environ.var()
 
 _cfg: Optional[AppConfig] = None
 
