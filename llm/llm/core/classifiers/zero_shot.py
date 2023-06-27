@@ -3,10 +3,12 @@ from typing import List
 from transformers import pipeline
 
 from ...utils.head_tail_ordered_dict import HeadTailOrderedDict
+from ..devices import device
 
 classifier = pipeline(
     "zero-shot-classification",
     model="MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli",
+    device=device,
 )
 
 

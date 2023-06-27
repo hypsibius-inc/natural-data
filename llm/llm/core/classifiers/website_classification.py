@@ -4,12 +4,13 @@ import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from ...utils.head_tail_ordered_dict import HeadTailOrderedDict
+from ..devices import device
 
 tokenizer = AutoTokenizer.from_pretrained("alimazhar-110/website_classification")
 
 model = AutoModelForSequenceClassification.from_pretrained(
     "alimazhar-110/website_classification"
-)
+).to(device)
 
 
 Website = IntEnum(
@@ -40,7 +41,7 @@ def get_website(text: str) -> HeadTailOrderedDict[Website, float]:
     labels = dict()
     for i, score in enumerate(
         torch.nn.Softmax(1)(
-            model(**tokenizer(text, return_tensors="pt")).logits
+            model(**tokenizer(text, return_tensors="pt").to(device)).logits
         ).tolist()[0]
     ):
         labels[Website(i)] = score
