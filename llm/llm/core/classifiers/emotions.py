@@ -1,4 +1,5 @@
 from enum import IntEnum
+from ...utils.listify import listify
 
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
@@ -49,12 +50,14 @@ Emotion = IntEnum(
 )
 
 
-def get_emotions(text: str) -> HeadTailOrderedDict[Emotion, float]:
-    labels = dict()
-    for i, score in enumerate(
-        torch.nn.Softmax(1)(
-            model(**tokenizer(text, return_tensors="pt").to(device)).logits
-        ).tolist()[0]
-    ):
-        labels[Emotion(i)] = score
-    return HeadTailOrderedDict(sorted(labels.items(), key=lambda x: x[1], reverse=True))
+def get_emotions(text: str | list) -> HeadTailOrderedDict[Emotion, float]:
+    text = listify(text)
+    ret = []
+    for l in torch.nn.Softmax(1)(
+        model(**tokenizer(text, padding=True, truncation=True, return_tensors="pt").to(device)).logits
+    ).tolist():
+        labels = dict()
+        for i, score in enumerate(l):
+            labels[Emotion(i)] = score
+        ret.append(HeadTailOrderedDict(sorted(labels.items(), key=lambda x: x[1], reverse=True)))
+    return ret

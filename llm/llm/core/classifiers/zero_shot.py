@@ -1,4 +1,5 @@
 from typing import List
+from ...utils.listify import listify
 
 from transformers import pipeline
 
@@ -12,10 +13,11 @@ classifier = pipeline(
 )
 
 
-def get_label_scores(text: str, labels: List[str]) -> HeadTailOrderedDict[str, float]:
+def get_label_scores(text: str | list, labels: List[str]) -> list[HeadTailOrderedDict[str, float]]:
+    text = listify(text)
     output = classifier(text, labels, multi_label=True)
-    return HeadTailOrderedDict(
+    return [HeadTailOrderedDict(
         sorted(
-            zip(output["labels"], output["scores"]), key=lambda x: x[1], reverse=True
+            zip(o["labels"], o["scores"]), key=lambda x: x[1], reverse=True
         )
-    )
+    ) for o in output]

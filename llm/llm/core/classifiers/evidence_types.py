@@ -1,4 +1,5 @@
 from enum import IntEnum
+from ...utils.listify import listify
 
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
@@ -28,12 +29,14 @@ EvidenceTypes = IntEnum(
 )
 
 
-def get_evidence_type(text: str) -> HeadTailOrderedDict[EvidenceTypes, float]:
-    labels = dict()
-    for i, score in enumerate(
-        torch.nn.Softmax(1)(
-            model(**tokenizer(text, return_tensors="pt").to(device)).logits
-        ).tolist()[0]
-    ):
-        labels[EvidenceTypes(i)] = score
-    return HeadTailOrderedDict(sorted(labels.items(), key=lambda x: x[1], reverse=True))
+def get_evidence_type(text: str | list) -> HeadTailOrderedDict[EvidenceTypes, float]:
+    text = listify(text)
+    ret = []
+    for l in torch.nn.Softmax(1)(
+        model(**tokenizer(text, padding=True, truncation=True, return_tensors="pt").to(device)).logits
+    ).tolist():
+        labels = dict()
+        for i, score in enumerate(l):
+            labels[EvidenceTypes(i)] = score
+        ret.append(HeadTailOrderedDict(sorted(labels.items(), key=lambda x: x[1], reverse=True)))
+    return ret
