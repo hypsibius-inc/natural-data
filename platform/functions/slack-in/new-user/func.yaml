@@ -1,0 +1,14 @@
+specVersion: 0.35.0
+name: new-user
+runtime: typescript
+registry: cloud.canister.io:5000/jonirap
+image: cloud.canister.io:5000/jonirap/new-user:latest
+created: 2023-07-06T18:23:54.643399011-06:00
+build:
+  builder: pack
+  buildEnvs:
+  - name: BP_NODE_RUN_SCRIPTS
+    value: build
+  pvcSize: 256Mi
+deploy:
+  namespace: default
