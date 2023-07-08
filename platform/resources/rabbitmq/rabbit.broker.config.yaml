@@ -1,0 +1,9 @@
+apiVersion: eventing.knative.dev/v1alpha1
+kind: RabbitmqBrokerConfig
+metadata:
+  name: rabbit-broker-config
+  namespace: rabbit
+spec:
+  rabbitmqClusterReference:
+    name: rabbit-cluster
+  queueType: quorum
