@@ -20,4 +20,4 @@ run:
   - name: SLACK_BOT_TOKEN
     value: '{{ secret:slack-secrets:slack-bot-token }}'
 deploy:
-  namespace: default
+  namespace: slack

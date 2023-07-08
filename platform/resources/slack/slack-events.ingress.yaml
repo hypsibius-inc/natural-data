@@ -3,13 +3,13 @@ kind: ClusterDomainClaim
 metadata:
   name: d2554cb6bb78-7276572338102876217.ngrok-free.app
 spec:
-  namespace: default
+  namespace: slack
 ---
 apiVersion: serving.knative.dev/v1alpha1
 kind: DomainMapping
 metadata:
   name: d2554cb6bb78-7276572338102876217.ngrok-free.app
-  namespace: default
+  namespace: slack
 spec:
   ref:
     name: slack-events
@@ -20,7 +20,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: slack-events-ingress
-  namespace: default
+  namespace: slack
 spec:
   ingressClassName: ngrok
   rules:
