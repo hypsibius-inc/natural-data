@@ -1,0 +1,23 @@
+specVersion: 0.35.0
+name: slack-events
+runtime: typescript
+registry: cloud.canister.io:5000/jonirap
+image: cloud.canister.io:5000/jonirap/slack-events:latest
+imageDigest: sha256:5e98d49121d499df5e22496171a47f0a97360bf9f43ff795abf99ca7211be3c1
+created: 2023-07-07T13:54:14.003264642-06:00
+build:
+  builder: pack
+  buildEnvs:
+  - name: BP_NODE_RUN_SCRIPTS
+    value: build
+  pvcSize: 256Mi
+run:
+  envs:
+  - name: SLACK_SIGNING_SECRET
+    value: '{{ secret:slack-secrets:slack-signing-secret }}'
+  - name: SLACK_APP_TOKEN
+    value: '{{ secret:slack-secrets:slack-app-token }}'
+  - name: SLACK_BOT_TOKEN
+    value: '{{ secret:slack-secrets:slack-bot-token }}'
+deploy:
+  namespace: default

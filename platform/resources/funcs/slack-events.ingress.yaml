@@ -1,29 +1,36 @@
+apiVersion: networking.internal.knative.dev/v1alpha1
+kind: ClusterDomainClaim
+metadata:
+  name: d2554cb6bb78-7276572338102876217.ngrok-free.app
+spec:
+  namespace: default
+---
 apiVersion: serving.knative.dev/v1alpha1
 kind: DomainMapping
 metadata:
-  name: c2f7390d2fcf-7276572338102876217.ngrok-free.app
+  name: d2554cb6bb78-7276572338102876217.ngrok-free.app
   namespace: default
 spec:
   ref:
-    name: new-user
+    name: slack-events
     kind: Service
     apiVersion: serving.knative.dev/v1
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: new-user-ingress
+  name: slack-events-ingress
   namespace: default
 spec:
   ingressClassName: ngrok
   rules:
-  - host: c2f7390d2fcf-7276572338102876217.ngrok-free.app
+  - host: d2554cb6bb78-7276572338102876217.ngrok-free.app
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: new-user
+            name: slack-events
             port:
               number: 80

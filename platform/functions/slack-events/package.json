@@ -13,7 +13,7 @@
     "test:unit": "ts-node node_modules/tape/bin/tape test/unit.ts",
     "test:integration": "ts-node node_modules/tape/bin/tape test/integration.ts",
     "test": "npm run test:unit && npm run test:integration",
-    "start": "FUNC_LOG_LEVEL=info faas-js-runtime ./build/index.js",
+    "start": "FUNC_LOG_LEVEL=info hypsibius-faas-js-runtime ./build/index.js --include-raw",
     "lint": "eslint \"src/**/*.{js,ts,tsx}\" \"test/**/*.{js,ts,tsx}\" --quiet",
     "debug": "nodemon --inspect ./node_modules/faas-js-runtime/bin/cli.js ./build/index.js"
   },
@@ -34,7 +34,8 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
-    "@types/node": "^16.11.12",
-    "faas-js-runtime": "^1.1.0"
+    "@hypsibius/faas-js-runtime": "^2.2.6",
+    "@slack/bolt": "^3.13.1",
+    "@types/node": "^16.11.12"
   }
 }
