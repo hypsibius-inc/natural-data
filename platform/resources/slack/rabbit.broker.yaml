@@ -4,10 +4,9 @@ metadata:
   annotations:
     eventing.knative.dev/broker.class: RabbitMQBroker
   name: rabbit-broker
-  namespace: rabbit
+  namespace: slack
 spec:
   config:
     apiVersion: eventing.knative.dev/v1alpha1
     kind: RabbitmqBrokerConfig
     name: rabbit-broker-config
-    namespace: rabbit

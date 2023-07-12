@@ -1,0 +1,16 @@
+specVersion: 0.35.0
+name: slack-app-home-opened
+runtime: typescript
+registry: localhost:5000/
+image: localhost:5000/slack-app-home-opened:latest
+imageDigest: sha256:bb8d588bc7aa2a027d860540cd9b3d1032f3b7499364527187b31f7cd9d0d974
+created: 2023-07-11T13:49:03.172787958-06:00
+invoke: cloudevent
+build:
+  builder: pack
+  buildEnvs:
+  - name: BP_NODE_RUN_SCRIPTS
+    value: build
+  pvcSize: 256Mi
+deploy:
+  namespace: slack

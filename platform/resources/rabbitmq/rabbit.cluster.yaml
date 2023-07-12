@@ -3,3 +3,5 @@ kind: RabbitmqCluster
 metadata:
   name: rabbit-cluster
   namespace: rabbit
+  annotations:
+    rabbitmq.com/topology-allowed-namespaces: "*"

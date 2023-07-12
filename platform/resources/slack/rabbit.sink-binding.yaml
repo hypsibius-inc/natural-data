@@ -15,4 +15,4 @@ spec:
       apiVersion: eventing.knative.dev/v1
       kind: Broker
       name: rabbit-broker
-      namespace: rabbit
+      namespace: slack

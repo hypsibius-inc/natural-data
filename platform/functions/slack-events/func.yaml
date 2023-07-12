@@ -1,10 +1,10 @@
 specVersion: 0.35.0
 name: slack-events
 runtime: typescript
-registry: cloud.canister.io:5000/jonirap
-image: cloud.canister.io:5000/jonirap/slack-events:latest
-imageDigest: sha256:5e98d49121d499df5e22496171a47f0a97360bf9f43ff795abf99ca7211be3c1
-created: 2023-07-07T13:54:14.003264642-06:00
+registry: localhost:5000/
+image: localhost:5000/slack-events:latest
+imageDigest: sha256:0705ff6f3abedb9a7a2b2dc359c33c515b54b3edf2c0933ded905e7961766296
+created: 2023-07-11T12:04:55.760078359-06:00
 build:
   builder: pack
   buildEnvs:
