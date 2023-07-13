@@ -1,16 +1,16 @@
-import { emitterFor, httpTransport, CloudEvent, Mode } from 'cloudevents';
+import { emitterFor, httpTransport, CloudEvent } from 'cloudevents';
 import { CloudEventV1OptionalAttributes } from 'cloudevents/dist/event/interfaces';
 import { GetSinkOptions, GetSourceOptions, getSink, getSource } from './consts';
 
 export interface PublishFunctionGenerationOptions extends GetSourceOptions, GetSinkOptions {}
 
-export type PublishFunction = <T>(
+export type PublishFunction<T> = (
   type: string,
   data: T,
   extra?: CloudEventV1OptionalAttributes<T>
 ) => Promise<CloudEvent<T>>;
 
-export const getPublishFunction = (options?: PublishFunctionGenerationOptions): PublishFunction => {
+export const getPublishFunction = <T>(options?: PublishFunctionGenerationOptions): PublishFunction<T> => {
   const emitter = emitterFor(httpTransport(getSink(options)));
   const source = getSource(options);
   return async <T>(type: string, data: T, extra?: CloudEventV1OptionalAttributes<T>): Promise<CloudEvent<T>> => {

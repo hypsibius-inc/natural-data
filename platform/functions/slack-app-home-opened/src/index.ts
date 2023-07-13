@@ -1,9 +1,9 @@
 import { getPublishFunction, getSource } from '@hypsibius/knative-faas-utils';
-import { EventsToTypes } from '@hypsibius/message-types';
+import { EventsToTypes, HypsibiusSlackEvent } from '@hypsibius/message-types';
 import { CloudEvent } from 'cloudevents';
 import { Context, StructuredReturn } from 'faas-js-runtime';
 
-const publish = getPublishFunction();
+const publish = getPublishFunction<EventsToTypes['slack_send_message']>();
 
 /**
  * Your CloudEvents function, invoked with each request. This
@@ -25,7 +25,7 @@ const publish = getPublishFunction();
  */
 const handle = async (
   _context: Context,
-  cloudevent?: CloudEvent<EventsToTypes['app_home_opened']>
+  cloudevent?: CloudEvent<HypsibiusSlackEvent<'app_home_opened'>>
 ): Promise<CloudEvent<EventsToTypes['error']> | StructuredReturn> => {
   const source = getSource();
   if (!cloudevent || !cloudevent.data) {
@@ -37,13 +37,16 @@ const handle = async (
     return response;
   }
   _context.log.info(`Received Event: ${JSON.stringify(cloudevent.data)}`);
-  await publish<EventsToTypes['slack_send_message']>('slack_send_message', {
-    channel: cloudevent.data.channel,
-    text: `Hi <@${cloudevent.data.user}>`
+  await publish('slack_send_message', {
+    context: cloudevent.data.context,
+    args: {
+      channel: cloudevent.data.payload.channel,
+      text: `Hi <@${cloudevent.data.payload.user}>`
+    }
   });
   return {
     statusCode: 200
-  }
+  };
 };
 
 export { handle };

@@ -2,22 +2,19 @@ import { SlackLogger, getSource } from '@hypsibius/knative-faas-utils';
 import { EventsToTypes } from '@hypsibius/message-types';
 import { WebClient } from '@slack/web-api';
 import { CloudEvent } from 'cloudevents';
-import { Context } from 'faas-js-runtime';
+import { Logger, Context as FaaSContext } from 'faas-js-runtime';
 
-let client: WebClient;
+let logger: SlackLogger;
 
 if (!process.env.SLACK_BOT_TOKEN) {
   throw Error('Missing Slack Env vars');
 }
 
-function initialize(context: Context): WebClient {
-  if (!client) {
-    const logger = new SlackLogger(context.log);
-    client = new WebClient(process.env.SLACK_BOT_TOKEN, {
-      logger: logger
-    });
+function initialize(log: Logger): SlackLogger {
+  if (!logger) {
+    logger = new SlackLogger(log);
   }
-  return client;
+  return logger;
 }
 
 /**
@@ -39,7 +36,7 @@ function initialize(context: Context): WebClient {
  * @param {CloudEvent} cloudevent the CloudEvent
  */
 const handle = async (
-  context: Context,
+  context: FaaSContext,
   cloudevent?: CloudEvent<EventsToTypes['slack_send_message']>
 ): Promise<CloudEvent<Error | EventsToTypes['slack_send_message_response']>> => {
   const source = getSource();
@@ -53,10 +50,15 @@ const handle = async (
   }
   context.log.info(`DATA: ${JSON.stringify(cloudevent.data)}`);
   try {
-    const client = initialize(context);
+    const client = new WebClient(cloudevent.data.context.botToken, {
+      logger: initialize(context.log)
+    });
     return new CloudEvent<EventsToTypes['slack_send_message_response']>({
       source: source,
-      data: await client.chat.postMessage(cloudevent.data!),
+      data: {
+        res: await client.chat.postMessage(cloudevent.data.args),
+        context: cloudevent.data.context
+      },
       type: 'slack_send_message_response'
     });
   } catch (e) {

@@ -35,7 +35,8 @@
   },
   "dependencies": {
     "@hypsibius/faas-js-runtime": "^2.2.11",
-    "@hypsibius/knative-faas-utils": "^0.0.6",
+    "@hypsibius/knative-faas-utils": "^0.0.7",
+    "@hypsibius/message-types": "^0.0.4",
     "@slack/bolt": "^3.13.1",
     "@types/node": "^16.11.12"
   }

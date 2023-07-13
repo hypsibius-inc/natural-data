@@ -2,11 +2,12 @@ import { Context, StructuredReturn } from '@hypsibius/faas-js-runtime';
 import { App } from '@slack/bolt';
 import FaaSJSReceiver from './faas-js.receiver';
 import { getPublishFunction, SlackLogger } from '@hypsibius/knative-faas-utils';
+import {HypsibiusSlackEvent} from "@hypsibius/message-types";
 
 let receiver: FaaSJSReceiver;
 let app: App;
 
-const publish = getPublishFunction();
+const publish = getPublishFunction<HypsibiusSlackEvent>();
 
 function initialize(context: Context): FaaSJSReceiver {
   if (!receiver && !app) {
@@ -27,10 +28,14 @@ function initialize(context: Context): FaaSJSReceiver {
       logger: logger
     });
 
-    app.event('app_home_opened', async ({ logger, payload }) => {
+    app.event('app_home_opened', async ({ logger, payload, context }) => {
       logger.warn(JSON.stringify(payload));
-      await publish(payload.type, payload);
+      await publish(payload.type, {
+        payload,
+        context,
+      });
     });
+    app.action("some_action")
   }
   return receiver;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@hypsibius/knative-faas-utils",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Utility package for working with Knative eventing within Knative serving functions",
   "scripts": {
     "build": "npx -p typescript tsc",
