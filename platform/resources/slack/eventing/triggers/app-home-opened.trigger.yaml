@@ -1,0 +1,16 @@
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: slack-app-home-opened
+  namespace: slack
+spec:
+  broker: rabbit-broker
+  filter:
+    attributes:
+      type: app_home_opened
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: slack-app-home-opened
+      namespace: slack

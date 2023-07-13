@@ -1,9 +1,24 @@
-import { getPublishFunction, getSource } from '@hypsibius/knative-faas-utils';
+import { SlackLogger, getSource } from '@hypsibius/knative-faas-utils';
 import { EventsToTypes } from '@hypsibius/message-types';
+import { WebClient } from '@slack/web-api';
 import { CloudEvent } from 'cloudevents';
-import { Context, StructuredReturn } from 'faas-js-runtime';
+import { Context } from 'faas-js-runtime';
 
-const publish = getPublishFunction();
+let client: WebClient;
+
+if (!process.env.SLACK_BOT_TOKEN) {
+  throw Error('Missing Slack Env vars');
+}
+
+function initialize(context: Context): WebClient {
+  if (!client) {
+    const logger = new SlackLogger(context.log);
+    client = new WebClient(process.env.SLACK_BOT_TOKEN, {
+      logger: logger
+    });
+  }
+  return client;
+}
 
 /**
  * Your CloudEvents function, invoked with each request. This
@@ -13,7 +28,7 @@ const publish = getPublishFunction();
  * It can be invoked with 'func invoke'.
  * It can be tested with 'npm test'.
  *
- * @param {Context} _context a context object.
+ * @param {Context} context a context object.
  * @param {object} context.body the request body if any
  * @param {object} context.query the query string deserialzed as an object, if any
  * @param {object} context.log logging object with methods for 'info', 'warn', 'error', etc.
@@ -24,9 +39,9 @@ const publish = getPublishFunction();
  * @param {CloudEvent} cloudevent the CloudEvent
  */
 const handle = async (
-  _context: Context,
-  cloudevent?: CloudEvent<EventsToTypes['app_home_opened']>
-): Promise<CloudEvent<EventsToTypes['error']> | StructuredReturn> => {
+  context: Context,
+  cloudevent?: CloudEvent<EventsToTypes['slack_send_message']>
+): Promise<CloudEvent<Error | EventsToTypes['slack_send_message_response']>> => {
   const source = getSource();
   if (!cloudevent || !cloudevent.data) {
     const response: CloudEvent<EventsToTypes['error']> = new CloudEvent({
@@ -36,13 +51,21 @@ const handle = async (
     });
     return response;
   }
-  _context.log.info(`Received Event: ${JSON.stringify(cloudevent.data)}`);
-  await publish<EventsToTypes['slack_send_message']>('slack_send_message', {
-    channel: cloudevent.data.channel,
-    text: `Hi <@${cloudevent.data.user}>`
-  });
-  return {
-    statusCode: 200
+  context.log.info(`DATA: ${JSON.stringify(cloudevent.data)}`);
+  try {
+    const client = initialize(context);
+    return new CloudEvent<EventsToTypes['slack_send_message_response']>({
+      source: source,
+      data: await client.chat.postMessage(cloudevent.data!),
+      type: 'slack_send_message_response'
+    });
+  } catch (e) {
+    context.log.error(JSON.stringify(e));
+    return new CloudEvent({
+      type: 'error',
+      source: source,
+      data: new Error(JSON.stringify(e))
+    });
   }
 };
 

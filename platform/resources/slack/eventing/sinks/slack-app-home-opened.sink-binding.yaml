@@ -1,7 +1,7 @@
 apiVersion: sources.knative.dev/v1
 kind: SinkBinding
 metadata:
-  name: slack-rabbit-binding
+  name: slack-app-home-opened-rabbit-binding
   namespace: slack
 spec:
   subject:
@@ -9,7 +9,7 @@ spec:
     kind: Deployment
     selector:
       matchLabels:
-        function.knative.dev/name: slack-events
+        function.knative.dev/name: slack-app-home-opened
   sink:
     ref:
       apiVersion: eventing.knative.dev/v1

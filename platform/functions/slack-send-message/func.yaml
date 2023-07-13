@@ -1,0 +1,20 @@
+specVersion: 0.35.0
+name: slack-send-message
+runtime: typescript
+registry: localhost:5000/
+image: localhost:5000/slack-send-message:latest
+imageDigest: sha256:c54c55df0f051845e3dcd0bbd4002f9256e6953712d66e2d4662f5ae3fe66219
+created: 2023-07-12T13:48:27.107045251-06:00
+invoke: cloudevent
+build:
+  builder: pack
+  buildEnvs:
+  - name: BP_NODE_RUN_SCRIPTS
+    value: build
+  pvcSize: 256Mi
+run:
+  envs:
+  - name: SLACK_BOT_TOKEN
+    value: '{{ secret:slack-secrets:slack-bot-token }}'
+deploy:
+  namespace: slack
