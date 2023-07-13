@@ -1,5 +1,7 @@
 # The Hypsibius Platform
 ## Installing on new K8s
+* [Install Cert-Manager](https://cert-manager.io/docs/installation/helm/#steps)
+  * Follow steps 1-4
 * [Install Knative Operator](https://knative.dev/docs/install/operator/knative-with-operators/#install-the-knative-operator)
 * Install Eventing + Serving from the [resources/knative](./resources/knative/) directory by applying the yaml files
 * Install Ngrok ingress controller if needed (Domain might be supplied by cloud provider)
