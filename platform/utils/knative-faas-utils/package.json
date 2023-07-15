@@ -1,6 +1,6 @@
 {
   "name": "@hypsibius/knative-faas-utils",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Utility package for working with Knative eventing within Knative serving functions",
   "scripts": {
     "build": "npx -p typescript tsc",
@@ -22,8 +22,8 @@
     "@types/node": "^20.4.1"
   },
   "dependencies": {
-    "@hypsibius/faas-js-runtime": "^2.2.12",
     "@slack/bolt": "^3.13.1",
-    "cloudevents": "^7.0.2"
+    "cloudevents": "^7.0.2",
+    "faas-js-runtime": "^2.2.2"
   }
 }

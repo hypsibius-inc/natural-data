@@ -1,4 +1,4 @@
-import { Logger as FaaSLogger } from '@hypsibius/faas-js-runtime';
+import { Logger as FaaSLogger } from 'faas-js-runtime';
 import { LogLevel, Logger } from '@slack/bolt';
 
 export class SlackLogger implements Logger {
