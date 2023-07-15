@@ -3,7 +3,7 @@ name: slack-events
 runtime: typescript
 registry: localhost:5000/
 image: localhost:5000/slack-events:latest
-imageDigest: sha256:a10553ba5e0133bb7a5bc4d4c785464e7f4f82742bc24ea84e310de9a57f1d3a
+imageDigest: sha256:8ba96939710388e5201b9dc033a38ef525e9a7f23e05856e2ad71ccc80ab295d
 created: 2023-07-11T12:04:55.760078359-06:00
 build:
   builder: pack
@@ -13,11 +13,19 @@ build:
   pvcSize: 256Mi
 run:
   envs:
+  - name: FUNC_LOG_LEVEL
+    value: debug
   - name: SLACK_SIGNING_SECRET
     value: '{{ secret:slack-secrets:slack-signing-secret }}'
   - name: SLACK_APP_TOKEN
     value: '{{ secret:slack-secrets:slack-app-token }}'
   - name: SLACK_BOT_TOKEN
     value: '{{ secret:slack-secrets:slack-bot-token }}'
+  - name: SLACK_CLIENT_ID
+    value: '{{ secret:slack-secrets:slack-client-id }}'
+  - name: SLACK_CLIENT_SECRET
+    value: '{{ secret:slack-secrets:slack-client-secret }}'
+  - name: SLACK_APP_SCOPES
+    value: chat:write,channels:history,channels:read,commands,dnd:read,files:read,groups:history,groups:read,im:history,im:read,metadata.message:read,mpim:history,mpim:read,team:read,users.profile:read,users:read,users:read.email
 deploy:
   namespace: slack

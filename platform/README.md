@@ -10,6 +10,8 @@
   * Steps 5+ are the yaml located [here](./resources/slack/serving/slack-events.ingress.yaml)
 * [Install RabbitMQ operator](https://github.com/rabbitmq/cluster-operator)
 * [Install RabbitMQ Knative Broker](https://knative.dev/docs/eventing/brokers/broker-types/rabbitmq-broker/#install-the-rabbitmq-controller)
+* [Install the MongoDB community operator](https://github.com/mongodb/mongodb-kubernetes-operator/blob/master/docs/install-upgrade.md#install-the-operator-using-Helm)
+  * In the `mongodb` namespace
 ## Adding functions
 Use the func CLI (knative plugin) to create new functions within the functions directory.
 When deploying, you might get an error. Run `npm upgrade` to resolve.

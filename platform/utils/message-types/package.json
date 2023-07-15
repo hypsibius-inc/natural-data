@@ -1,6 +1,6 @@
 {
   "name": "@hypsibius/message-types",
-  "version": "0.0.4",
+  "version": "0.0.10",
   "description": "Types package for messages between Hypsibius Platform functions",
   "scripts": {
     "build": "npx -p typescript tsc",
@@ -13,6 +13,17 @@
   },
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "exports": {
+    ".": "./build/index.js",
+    "./mongo": "./build/mongo/index.js"
+  },
+  "typesVersions": {
+    "*": {
+      "mongo": [
+        "build/mongo/index.d.ts"
+      ]
+    }
+  },
   "files": [
     "build/**/*"
   ],
@@ -22,6 +33,7 @@
     "@types/node": "^20.4.1"
   },
   "dependencies": {
-    "@slack/bolt": "^3.13.1"
+    "@slack/bolt": "^3.13.1",
+    "mongoose": "^7.3.4"
   }
 }

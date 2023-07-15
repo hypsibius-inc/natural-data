@@ -1,29 +1,56 @@
-import { Context, StructuredReturn } from '@hypsibius/faas-js-runtime';
+import { Context, StructuredReturn } from 'faas-js-runtime';
+import { SlackLogger, getPublishFunction } from '@hypsibius/knative-faas-utils';
+import { HypsibiusSlackEvent } from '@hypsibius/message-types';
 import { App } from '@slack/bolt';
 import FaaSJSReceiver from './faas-js.receiver';
-import { getPublishFunction, SlackLogger } from '@hypsibius/knative-faas-utils';
-import {HypsibiusSlackEvent} from "@hypsibius/message-types";
+import { getInstallationStore } from './installation-store';
 
 let receiver: FaaSJSReceiver;
 let app: App;
+
+const signingSecret: string = process.env.SLACK_SIGNING_SECRET!;
+if (!signingSecret) {
+  throw Error(`Environment variable SLACK_SIGNING_SECRET doesn't exist`);
+}
+const clientId: string = process.env.SLACK_CLIENT_ID!;
+if (!clientId) {
+  throw Error(`Environment variable SLACK_CLIENT_ID doesn't exist`);
+}
+const clientSecret: string = process.env.SLACK_CLIENT_SECRET!;
+if (!clientSecret) {
+  throw Error(`Environment variable SLACK_CLIENT_SECRET doesn't exist`);
+}
+const appToken: string = process.env.SLACK_APP_TOKEN!;
+if (!appToken) {
+  throw Error(`Environment variable SLACK_APP_TOKEN doesn't exist`);
+}
+const scopes: string = process.env.SLACK_APP_SCOPES!;
+if (!scopes) {
+  throw Error(`Environment variable SLACK_APP_SCOPES doesn't exist`);
+}
+
+const installationServiceURL = 'http://slack-mongo-installation-manager.mongodb.svc.cluster.local';
 
 const publish = getPublishFunction<HypsibiusSlackEvent>();
 
 function initialize(context: Context): FaaSJSReceiver {
   if (!receiver && !app) {
-    const signingSecret: string | undefined = process.env.SLACK_SIGNING_SECRET;
-    if (!signingSecret) {
-      throw Error(`Environment variable SLACK_SIGNING_SECRET doesn't exist`);
-    }
     const logger = new SlackLogger(context.log);
     receiver = new FaaSJSReceiver({
       signingSecret: signingSecret,
-      logger: logger
+      logger: logger,
+      installerOptions: {
+        clientId,
+        clientSecret,
+        directInstall: true,
+        stateSecret: 'hypsibius-is-a-tardigrade',
+        installationStore: getInstallationStore(installationServiceURL)
+      },
+      scopes: scopes
     });
     app = new App({
       processBeforeResponse: true,
-      token: process.env.SLACK_BOT_TOKEN,
-      appToken: process.env.SLACK_APP_TOKEN,
+      appToken: appToken,
       receiver: receiver,
       logger: logger
     });
@@ -32,36 +59,16 @@ function initialize(context: Context): FaaSJSReceiver {
       logger.warn(JSON.stringify(payload));
       await publish(payload.type, {
         payload,
-        context,
+        context
       });
     });
-    app.action("some_action")
+    app.action('some_action');
   }
   return receiver;
 }
 
-/**
- * Your HTTP handling function, invoked with each request. This is an example
- * function that logs the incoming request and echoes its input to the caller.
- *
- * It can be invoked with `func invoke`
- * It can be tested with `npm test`
- *
- * It can be invoked with `func invoke`
- * It can be tested with `npm test`
- *
- * @param {Context} context a context object.
- * @param {object} context.body the request body if any
- * @param {object} context.query the query string deserialized as an object, if any
- * @param {object} context.log logging object with methods for 'info', 'warn', 'error', etc.
- * @param {object} context.headers the HTTP request headers
- * @param {string} context.method the HTTP request method
- * @param {string} context.httpVersion the HTTP protocol version
- * See: https://github.com/knative/func/blob/main/docs/guides/nodejs.md#the-context-object
- */
 const handle = async (context: Context, body: Record<string, any> | string): Promise<StructuredReturn> => {
-  const receiver = initialize(context);
-  const handler = await receiver.start();
+  const handler = await initialize(context).start();
   return await handler(context, body);
 };
 

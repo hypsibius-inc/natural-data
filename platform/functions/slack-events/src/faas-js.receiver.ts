@@ -1,14 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Context, StructuredReturn } from '@hypsibius/faas-js-runtime';
 import { App, Receiver, ReceiverEvent, ReceiverMultipleAckError } from '@slack/bolt';
 import { StringIndexed } from '@slack/bolt/dist/types/helpers';
-import { ConsoleLogger, LogLevel, Logger } from '@slack/logger';
+import { LogLevel, Logger } from '@slack/logger';
+import { InstallProvider, InstallProviderOptions } from '@slack/oauth';
 import crypto from 'crypto';
+import { Context, StructuredReturn } from 'faas-js-runtime';
+import { IncomingMessage, ServerResponse } from 'http';
+import httpMocks from 'node-mocks-http';
 import tsscmp from 'tsscmp';
 
 export interface FaaSJSReceiverOptions {
   signingSecret: string;
-  logger?: Logger;
+  logger: Logger;
+  installerOptions?: InstallProviderOptions;
+  scopes?: string;
   logLevel?: LogLevel;
   customPropertiesExtractor?: (context: Context) => StringIndexed;
 }
@@ -28,31 +33,40 @@ export default class FaaSJSReceiver implements Receiver {
 
   private logger: Logger;
 
+  public installer?: InstallProvider;
+
+  private scopes?: string;
+
   private customPropertiesExtractor: (context: Context) => StringIndexed;
 
   public constructor({
     signingSecret,
-    logger = undefined,
-    logLevel = LogLevel.INFO,
+    logger,
+    installerOptions = undefined,
+    scopes = undefined,
     customPropertiesExtractor = (_) => ({})
   }: FaaSJSReceiverOptions) {
     // Initialize instance variables, substituting defaults for each value
     this.signingSecret = signingSecret;
-    this.logger =
-      logger ??
-      (() => {
-        const defaultLogger = new ConsoleLogger();
-        defaultLogger.setLevel(logLevel);
-        return defaultLogger;
-      })();
+    this.logger = logger;
     this.customPropertiesExtractor = customPropertiesExtractor;
+    if (installerOptions) {
+      if (!scopes) {
+        throw Error('Scopes must be provided with install provider options!');
+      }
+      this.installer = new InstallProvider({
+        ...installerOptions,
+        logger: this.logger
+      });
+      this.scopes = scopes;
+    }
   }
 
-  public init(app: App): void {
+  public init = (app: App): void => {
     this.app = app;
-  }
+  };
 
-  public start(..._args: any[]): Promise<Handler> {
+  public start = (..._args: any[]): Promise<Handler> => {
     return new Promise((resolve, reject) => {
       try {
         const handler = this.toHandler();
@@ -61,18 +75,54 @@ export default class FaaSJSReceiver implements Receiver {
         reject(error);
       }
     });
-  }
+  };
 
   // eslint-disable-next-line class-methods-use-this
-  public stop(..._args: any[]): Promise<void> {
+  public stop = (..._args: any[]): Promise<void> => {
     return new Promise((resolve, _reject) => {
       resolve();
     });
-  }
+  };
 
-  public toHandler(): Handler {
+  private callWithReqRes = async <T>(
+    callback: (req: IncomingMessage, res: ServerResponse) => Promise<T>,
+    context: Context,
+    body?: string | StringIndexed
+  ): Promise<StructuredReturn> => {
+    const url = new URL(`https://${context.headers.host!}`);
+    for (const [k, v] of Object.entries(context.query || {})) {
+      url.searchParams.append(k, v);
+    }
+    const bd = body ? (typeof body === 'string' ? { body } : body) : {};
+    const req = httpMocks.createRequest({
+      url: url.href,
+      headers: context.headers,
+      body: bd
+    });
+    const res = httpMocks.createResponse({
+      req: req
+    });
+    await callback(req, res);
+    return {
+      statusCode: res._getStatusCode(),
+      headers: Object.fromEntries(
+        Object.entries(res._getHeaders())
+          .map(([k, v]): [string, string | undefined] => {
+            if (Array.isArray(v)) {
+              return [k, v.join(';')];
+            }
+            return [k, v];
+          })
+          .filter(([_, v]) => v) as [string, string][]
+      ),
+      body: res._getData()
+    };
+  };
+
+  public toHandler = (): Handler => {
     return async (context: Context, body?: string | StringIndexed): Promise<StructuredReturn> => {
       this.logger.debug(`FaaSJS Event: ${JSON.stringify(context, null, 2)}`);
+      this.logger.debug(`FaaSJS Body: ${JSON.stringify(body)}`);
 
       // ssl_check (for Slash Commands)
       if (
@@ -83,6 +133,32 @@ export default class FaaSJSReceiver implements Receiver {
         body.ssl_check != null
       ) {
         return Promise.resolve({ statusCode: 200, body: '' });
+      }
+
+      // Empty get request (install)
+      if (
+        (!body || Object.keys(body).length === 0 || body.length === 0) &&
+        (!context.query || Object.keys(context.query).length === 0) &&
+        this.installer !== undefined &&
+        this.scopes !== undefined
+      ) {
+        return await this.callWithReqRes(
+          async (req, res) => {
+            await this.installer!.handleInstallPath(req, res, undefined, { scopes: this.scopes! });
+          },
+          context,
+          body
+        );
+      }
+
+      if (context.query && context.query.code && context.query.state && this.installer && this.scopes) {
+        return await this.callWithReqRes(
+          async (req, res) => {
+            await this.installer!.handleCallback(req, res, undefined, { scopes: this.scopes! });
+          },
+          context,
+          body
+        );
       }
 
       // request signature verification
@@ -173,15 +249,15 @@ export default class FaaSJSReceiver implements Receiver {
       this.logger.info(`No request handler matched the request: ${context.req.url}`);
       return { statusCode: 404, body: '' };
     };
-  }
+  };
 
   // eslint-disable-next-line class-methods-use-this
-  private isValidRequestSignature(
+  private isValidRequestSignature = (
     signingSecret: string,
     body: string,
     signature: string,
     requestTimestamp: number
-  ): boolean {
+  ): boolean => {
     if (!signature || !requestTimestamp) {
       return false;
     }
@@ -201,11 +277,11 @@ export default class FaaSJSReceiver implements Receiver {
     }
 
     return true;
-  }
+  };
 
   // eslint-disable-next-line class-methods-use-this
-  private getHeaderValue(headers: Record<string, any>, key: string): string | undefined {
+  private getHeaderValue = (headers: Record<string, any>, key: string): string | undefined => {
     const caseInsensitiveKey = Object.keys(headers).find((it) => key.toLowerCase() === it.toLowerCase());
     return caseInsensitiveKey !== undefined ? headers[caseInsensitiveKey] : undefined;
-  }
+  };
 }

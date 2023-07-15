@@ -1,5 +1,5 @@
-import { Logger as FaaSLogger } from 'faas-js-runtime';
 import { LogLevel, Logger } from '@slack/bolt';
+import { Logger as FaaSLogger } from 'faas-js-runtime';
 
 export class SlackLogger implements Logger {
   private name: string;
@@ -12,19 +12,13 @@ export class SlackLogger implements Logger {
     return `${this.name}> ${msg}`;
   }
   debug(...msg: any[]): void {
-    if (this.level === LogLevel.DEBUG) {
-      return this._logger.debug(this.format(msg));
-    }
+    return this._logger.debug(this.format(msg));
   }
   info(...msg: any[]): void {
-    if (this.level in [LogLevel.DEBUG, LogLevel.INFO]) {
-      return this._logger.info(this.format(msg));
-    }
+    return this._logger.info(this.format(msg));
   }
   warn(...msg: any[]): void {
-    if (this.level in [LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN]) {
-      return this._logger.warn(this.format(msg));
-    }
+    return this._logger.warn(this.format(msg));
   }
   error(...msg: any[]): void {
     return this._logger.error(this.format(msg));

@@ -1,0 +1,19 @@
+specVersion: 0.35.0
+name: slack-mongo-installation-manager
+runtime: typescript
+registry: localhost:5000/
+image: localhost:5000/slack-mongo-installation-manager:latest
+imageDigest: sha256:84b3f0d17c9b6cafe1137bf770fc61c12c3e31895bb05d9d0912e60213ef1665
+created: 2023-07-13T20:17:44.531303169-06:00
+build:
+  builder: pack
+  buildEnvs:
+  - name: BP_NODE_RUN_SCRIPTS
+    value: build
+  pvcSize: 256Mi
+run:
+  envs:
+  - name: MONGODB_CONNECTION
+    value: '{{ secret:conf-mongodb-admin-hypsibius:connectionString.standardSrv }}'
+deploy:
+  namespace: mongodb
