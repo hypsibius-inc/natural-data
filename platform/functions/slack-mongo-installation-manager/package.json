@@ -35,8 +35,10 @@
   },
   "dependencies": {
     "@hypsibius/message-types": "^0.0.10",
+    "@types/mongodb": "^4.0.7",
     "@types/node": "^16.11.12",
     "faas-js-runtime": "^1.1.0",
+    "mongodb": "^5.7.0",
     "mongoose": "^7.3.4"
   }
 }

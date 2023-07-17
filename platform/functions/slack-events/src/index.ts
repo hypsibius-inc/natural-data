@@ -44,6 +44,9 @@ function initialize(context: Context): FaaSJSReceiver {
         clientSecret,
         directInstall: true,
         stateSecret: 'hypsibius-is-a-tardigrade',
+        installUrlOptions: {
+          scopes: scopes,
+        },
         installationStore: getInstallationStore(installationServiceURL)
       },
       scopes: scopes

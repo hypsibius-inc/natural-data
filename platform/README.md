@@ -5,13 +5,37 @@
 * [Install Knative Operator](https://knative.dev/docs/install/operator/knative-with-operators/#install-the-knative-operator)
 * Install Eventing + Serving from the [resources/knative](./resources/knative/) directory by applying the yaml files
 * Install Ngrok ingress controller if needed (Domain might be supplied by cloud provider)
-  * [Get auth keys](https://knative.dev/docs/eventing/brokers/broker-types/rabbitmq-broker/#install-the-rabbitmq-controller)
-  * [Follow steps 2-4 inclusive](https://knative.dev/docs/eventing/brokers/broker-types/rabbitmq-broker/#install-the-rabbitmq-controller)
+  * [Get auth keys](https://ngrok.com/docs/using-ngrok-with/k8s/#step-2-setup-your-kubernetes-cluster-and-install-the-ngrok-ingress-controller)
+  * [Follow steps 2-4 inclusive](https://ngrok.com/docs/using-ngrok-with/k8s/#step-2-setup-your-kubernetes-cluster-and-install-the-ngrok-ingress-controller)
   * Steps 5+ are the yaml located [here](./resources/slack/serving/slack-events.ingress.yaml)
-* [Install RabbitMQ operator](https://github.com/rabbitmq/cluster-operator)
+* [Install RabbitMQ operator](https://github.com/rabbitmq/cluster-operator#quickstart)
+* [Install RabbitMQ Messaging Topology operator](https://github.com/rabbitmq/messaging-topology-operator/#quickstart)
 * [Install RabbitMQ Knative Broker](https://knative.dev/docs/eventing/brokers/broker-types/rabbitmq-broker/#install-the-rabbitmq-controller)
-* [Install the MongoDB community operator](https://github.com/mongodb/mongodb-kubernetes-operator/blob/master/docs/install-upgrade.md#install-the-operator-using-Helm)
+* [Install the MongoDB community operator](https://github.com/mongodb/mongodb-kubernetes-operator/blob/master/docs/install-upgrade.md#install-in-a-different-namespace-using-helm)
   * In the `mongodb` namespace
+* Apply some yamls
+  * [enable metrics](./resources/global/metrics-server.yaml)
+  * [mongo](./resources/mongodb/mongodb.replicaset.yaml)
+  * Create the rabbit namespace 
+    ```bash
+    kubectl create namespace rabbit
+    ```
+  * [rabbit](./resources/rabbitmq/rabbit.cluster.yaml)
+  * If running locally
+    * Run 
+      ```bash
+      kubectl port-forward -n rabbit services/rabbit-cluster 15672
+      kubectl port-forward -n mongodb services/conf-mongodb-svc 27017
+      ```
+  * [function related](./resources/slack/)
+    ```bash
+    kubectl create namespace slack
+    kubectl apply -R -f resources/slack
+    ```
+* Start functions
+  * ```bash
+    func deploy --path functions/<func>
+    ```
 ## Adding functions
 Use the func CLI (knative plugin) to create new functions within the functions directory.
 When deploying, you might get an error. Run `npm upgrade` to resolve.

@@ -1,23 +1,18 @@
 import { EventsToTypes } from '@hypsibius/message-types';
 import { Installation } from '@hypsibius/message-types/mongo';
 import { Context, StructuredReturn } from 'faas-js-runtime';
-import mongoose, { Mongoose } from 'mongoose';
+import mongoose from 'mongoose';
 
 const MONGODB_CONNECTION: string = process.env.MONGODB_CONNECTION!;
 if (!MONGODB_CONNECTION) {
   throw Error('Env var MONGODB_CONNECTION not set');
 }
 
-let goose: Mongoose;
-
-const initialize = async () => {
-  if (!goose) {
-    goose = await mongoose.connect(MONGODB_CONNECTION, {
-      dbName: "slack-conf"
-    });
-    goose.
-  }
-}
+const init = () => {
+  mongoose.connect(MONGODB_CONNECTION, {
+    dbName: 'slack-conf'
+  });
+};
 
 /**
  * Your HTTP handling function, invoked with each request. This is an example
@@ -39,7 +34,6 @@ const initialize = async () => {
  * See: https://github.com/knative/func/blob/main/docs/guides/nodejs.md#the-context-object
  */
 const handle = async (_context: Context, body: EventsToTypes['installation_request']): Promise<StructuredReturn> => {
-  initialize();
   switch (body.type) {
     case 'set':
       const setDoc = await Installation.findOneAndUpdate(
@@ -85,4 +79,4 @@ const handle = async (_context: Context, body: EventsToTypes['installation_reque
   }
 };
 
-export { handle };
+export { handle, init };

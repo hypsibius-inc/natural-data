@@ -8,6 +8,7 @@ import { Context, StructuredReturn } from 'faas-js-runtime';
 import { IncomingMessage, ServerResponse } from 'http';
 import httpMocks from 'node-mocks-http';
 import tsscmp from 'tsscmp';
+import { success } from './install-success';
 
 export interface FaaSJSReceiverOptions {
   signingSecret: string;
@@ -154,7 +155,7 @@ export default class FaaSJSReceiver implements Receiver {
       if (context.query && context.query.code && context.query.state && this.installer && this.scopes) {
         return await this.callWithReqRes(
           async (req, res) => {
-            await this.installer!.handleCallback(req, res, undefined, { scopes: this.scopes! });
+            await this.installer!.handleCallback(req, res, { success }, { scopes: this.scopes! });
           },
           context,
           body
