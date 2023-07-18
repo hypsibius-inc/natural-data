@@ -16,6 +16,11 @@ enum OnceIn {
 }
 
 export const UserSchema = new Schema({
+  email: {
+    required: true,
+    type: String,
+    match: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+  },
   ids: {
     required: true,
     type: [
@@ -57,9 +62,10 @@ export const UserSchema = new Schema({
         id: {
           required: true,
           immutable: true,
+          lowercase: true,
           type: String,
           default: function () {
-            return ((this as any).name as string).toLowerCase().replace(' ', '-'); // tslint: disable-line
+            return ((this as any).name as string).replace(/\s/mg, '-'); // tslint: disable-line
           }
         },
         name: {
