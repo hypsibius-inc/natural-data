@@ -1,15 +1,49 @@
 import { InferSchemaType, Schema, model } from 'mongoose';
+import { InstallationHistory } from './installation-history.schema';
 
-export const InstallationSchema = new Schema({
-  slackId: {
-    type: String,
-    required: true
+export const InstallationSchema = new Schema(
+  {
+    _id: {
+      type: String,
+      required: true
+    },
+    version: {
+      type: Number,
+      required: true,
+    },
+    payload: {
+      type: Object,
+      required: true
+    }
   },
-  payload: {
-    type: Object,
-    required: true
+  {
+    timestamps: true,
+    versionKey: false
+  }
+);
+
+async function pushToHistory(doc: Installation) {
+  await InstallationHistory.create({
+    slackId: doc._id,
+    version: doc.version,
+    updatedAt: doc.updatedAt,
+    createdAt: doc.createdAt,
+    payload: doc.payload,
+  });
+}
+
+InstallationSchema.pre('findOneAndUpdate', function () {
+  this.findOneAndUpdate({}, { $inc: { version: 1 } });
+});
+
+InstallationSchema.post('findOneAndUpdate', async function (doc: Installation) {
+  console.log(`Post find1&U: ${JSON.stringify(doc)}`);
+  if (doc) {
+    await pushToHistory(doc);
   }
 });
+
+InstallationSchema.post("findOneAndDelete", pushToHistory);
 
 export type Installation = InferSchemaType<typeof InstallationSchema>;
 

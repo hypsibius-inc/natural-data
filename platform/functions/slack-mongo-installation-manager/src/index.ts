@@ -36,26 +36,28 @@ const init = () => {
 const handle = async (_context: Context, body: EventsToTypes['installation_request']): Promise<StructuredReturn> => {
   switch (body.type) {
     case 'set':
-      const setDoc = await Installation.findOneAndUpdate(
-        { slackId: body.id },
-        {
-          slackId: body.id,
-          payload: body.payload
-        },
-        {
-          upsert: true,
-          lean: true,
-          new: true,
-          projection: {
-            _id: false
+      try {
+        await Installation.findByIdAndUpdate(
+          body.id,
+          {
+            _id: body.id,
+            payload: body.payload
+          },
+          {
+            upsert: true
           }
-        }
-      ).exec();
-      return {
-        body: setDoc
-      };
+        ).exec();
+        return {
+          statusCode: 200
+        };
+      } catch (e) {
+        _context.log.error(JSON.stringify(e));
+        return {
+          statusCode: 500
+        };
+      }
     case 'get':
-      const getDoc = await Installation.findOne({ slackId: body.id }, { _id: false }, { lean: true }).exec();
+      const getDoc = await Installation.findById(body.id, { lean: true }).exec();
       if (!getDoc) {
         return {
           statusCode: 404,
@@ -66,16 +68,18 @@ const handle = async (_context: Context, body: EventsToTypes['installation_reque
         body: getDoc
       };
     case 'delete':
-      const deleted = await Installation.deleteOne({ slackId: body.id }).exec();
-      if (!deleted.acknowledged) {
+      try {
+        await Installation.findByIdAndDelete(body.id).exec();
+        return {
+          statusCode: 200
+        };
+      } catch (e) {
+        _context.log.error(JSON.stringify(e));
         return {
           statusCode: 500,
-          body: `Failed to delete ${body.id}`
+          body: JSON.stringify(e)
         };
       }
-      return {
-        body: `Deleted (${deleted.deletedCount}) ${body.id}`
-      };
   }
 };
 
