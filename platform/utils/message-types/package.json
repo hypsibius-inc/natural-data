@@ -1,6 +1,6 @@
 {
   "name": "@hypsibius/message-types",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Types package for messages between Hypsibius Platform functions",
   "scripts": {
     "build": "npx -p typescript tsc",

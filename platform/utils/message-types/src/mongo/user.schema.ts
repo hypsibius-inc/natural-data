@@ -1,5 +1,20 @@
 import mongoose, { InferSchemaType, Schema, model } from 'mongoose';
 
+enum OnceIn {
+  // Never waits, sends immediately
+  Immediate = 'IMMEDIATE',
+  // Rounds up to the nearest second
+  Minutes = 'MINUTES',
+  // Equivalent to 60 minutes
+  Hours = 'HOURS',
+  // Equivalent to 24 hours
+  Days = 'DAYS',
+  // Equivalent to 7 days
+  Weeks = 'WEEKS',
+  // Will use the startOn's dayOfMonth and timeOfDay, 28-31 days per month. No partial numbers allowed
+  Months = 'MONTHS'
+}
+
 export const UserSchema = new Schema({
   ids: {
     required: true,
@@ -8,7 +23,7 @@ export const UserSchema = new Schema({
         installation: {
           required: true,
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Installation'
+          ref: 'InstallationHistory'
         },
         teamOrgId: {
           required: true,
@@ -26,18 +41,82 @@ export const UserSchema = new Schema({
       }
     ]
   },
-  channels: {
+  activeChannels: {
     required: false,
     type: [
       {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+      }
+    ]
+  },
+  labels: {
+    required: true,
+    type: [
+      {
         id: {
+          required: true,
+          immutable: true,
           type: String,
-          required: true
+          default: function () {
+            return ((this as any).name as string).toLowerCase().replace(' ', '-'); // tslint: disable-line
+          }
         },
-        o: {
-          type: mongoose.Schema.Types.ObjectId,
-          required: true
+        name: {
+          required: true,
+          type: String
+        },
+        description: String,
+        alertConfig: {
+          required: true,
+          type: [
+            {
+              summarizeAbove: {
+                required: true,
+                type: Number,
+                default: -1
+              },
+              onceInType: {
+                required: true,
+                type: String,
+                enum: OnceIn,
+                default: OnceIn.Immediate
+              },
+              onceInValue: {
+                required: true,
+                type: Number,
+                default: 1
+              },
+              startOn: {
+                required: true,
+                type: Date,
+                default: Date.now
+              }
+            }
+          ],
+          default: [{}]
         }
+      }
+    ],
+    default: [
+      { name: 'Urgent', description: 'Urgent, Immediate, Important, Crucial messages' },
+      { name: 'Danger', description: 'Dangerous events - earthquakes, fires, collapse, shooting' },
+      {
+        name: 'Small talk',
+        description: 'Small talk and chit-chat between coworkers, family, sports, pets, music, birthdays, parties',
+        alertConfig: [{ onceInType: OnceIn.Hours, onceInValue: 2 }]
+      },
+      {
+        name: 'Updates',
+        description: 'Updates on completed work, new issues, work assignments',
+        alertConfig: [
+          { onceInType: OnceIn.Days, startOn: new Date(2023, 0, 1, 9) },
+          {
+            onceInType: OnceIn.Weeks,
+            startOn: new Date(2023, 6, 17, 9), // 17th July (monthINDEX), Monday morning 09:00
+            summarizeAbove: 1
+          }
+        ]
       }
     ]
   }

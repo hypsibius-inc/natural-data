@@ -4,7 +4,8 @@ export const InstallationHistorySchema = new Schema(
   {
     slackId: {
       type: String,
-      required: true
+      required: true,
+      immutable: true,
     },
     version: {
       type: Number,

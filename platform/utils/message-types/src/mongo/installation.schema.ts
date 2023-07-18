@@ -9,7 +9,7 @@ export const InstallationSchema = new Schema(
     },
     version: {
       type: Number,
-      required: true,
+      required: true
     },
     payload: {
       type: Object,
@@ -28,22 +28,15 @@ async function pushToHistory(doc: Installation) {
     version: doc.version,
     updatedAt: doc.updatedAt,
     createdAt: doc.createdAt,
-    payload: doc.payload,
+    payload: doc.payload
   });
 }
 
 InstallationSchema.pre('findOneAndUpdate', function () {
-  this.findOneAndUpdate({}, { $inc: { version: 1 } });
+  this.findOneAndUpdate({}, { $inc: { version: 1 } }, { new: true });
 });
 
-InstallationSchema.post('findOneAndUpdate', async function (doc: Installation) {
-  console.log(`Post find1&U: ${JSON.stringify(doc)}`);
-  if (doc) {
-    await pushToHistory(doc);
-  }
-});
-
-InstallationSchema.post("findOneAndDelete", pushToHistory);
+InstallationSchema.post('findOneAndUpdate', pushToHistory);
 
 export type Installation = InferSchemaType<typeof InstallationSchema>;
 
