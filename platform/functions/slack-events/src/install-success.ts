@@ -31,7 +31,7 @@ export function success(
   }
   let browserUrl = redirectUrl;
   if (isNotOrgInstall(installation)) {
-    browserUrl = `https://app.slack.com/client/${installation.team.id}/${installation.bot?.userId ?? installation.appId}`;
+    browserUrl = `https://app.slack.com/client/${installation.team.id}/${installation.appId}`;
   }
   callbackRes.setHeader('Location', browserUrl);
   callbackRes.writeHead(302);
