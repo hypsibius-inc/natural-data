@@ -4,12 +4,17 @@ export const ChannelSchema = new Schema({
   id: {
     type: String,
     required: true,
-    immutable: true,
+    immutable: true
+  },
+  archived: {
+    type: Boolean,
+    required: true,
+    default: false
   },
   teamId: {
     type: String,
     required: true,
-    immutable: true,
+    immutable: true
   },
   name: {
     type: String,

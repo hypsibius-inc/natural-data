@@ -46,15 +46,6 @@ export const UserSchema = new Schema({
       }
     ]
   },
-  activeChannels: {
-    required: false,
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
-      }
-    ]
-  },
   labels: {
     required: true,
     type: [
