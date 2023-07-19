@@ -1,11 +1,11 @@
-import { Context, StructuredReturn } from 'faas-js-runtime';
 import { SlackLogger, getPublishFunction } from '@hypsibius/knative-faas-utils';
-import { HypsibiusSlackEvent } from '@hypsibius/message-types';
+import { EventsToTypes, SlackEventsToTypes } from '@hypsibius/message-types';
 import { App } from '@slack/bolt';
+import { Context, StructuredReturn } from 'faas-js-runtime';
 import FaaSJSReceiver from './faas-js.receiver';
 import { getInstallationStore } from './installation-store';
 
-let receiver: FaaSJSReceiver;
+let receiver: FaaSJSReceiver<EventsToTypes & SlackEventsToTypes>;
 let app: App;
 
 const signingSecret: string = process.env.SLACK_SIGNING_SECRET!;
@@ -31,21 +31,22 @@ if (!scopes) {
 
 const installationServiceURL = 'http://slack-mongo-installation-manager.mongodb.svc.cluster.local';
 
-const publish = getPublishFunction<HypsibiusSlackEvent>();
+const publish = getPublishFunction<EventsToTypes & SlackEventsToTypes>();
 
-function initialize(context: Context): FaaSJSReceiver {
+function initialize(context: Context): FaaSJSReceiver<EventsToTypes & SlackEventsToTypes> {
   if (!receiver && !app) {
     const logger = new SlackLogger(context.log);
     receiver = new FaaSJSReceiver({
-      signingSecret: signingSecret,
-      logger: logger,
+      signingSecret,
+      logger,
+      publish,
       installerOptions: {
         clientId,
         clientSecret,
         directInstall: true,
         stateSecret: 'hypsibius-is-a-tardigrade',
         installUrlOptions: {
-          scopes: scopes,
+          scopes: scopes
         },
         installationStore: getInstallationStore(installationServiceURL)
       },
@@ -60,12 +61,14 @@ function initialize(context: Context): FaaSJSReceiver {
 
     app.event('app_home_opened', async ({ logger, payload, context }) => {
       logger.warn(JSON.stringify(payload));
-      await publish(payload.type, {
-        payload,
-        context
+      await publish({
+        type: payload.type,
+        data: {
+          payload,
+          context
+        }
       });
     });
-    app.action('some_action');
   }
   return receiver;
 }

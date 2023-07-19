@@ -1,4 +1,4 @@
-import { EventsToTypes } from '@hypsibius/message-types';
+import { InstallationRequest } from '@hypsibius/message-types';
 import { type Installation } from '@hypsibius/message-types/mongo';
 import { Installation as InstallationInterface, InstallationQuery } from '@slack/bolt';
 import axios, { AxiosResponse } from 'axios';
@@ -13,11 +13,10 @@ export const getInstallationStore = (installationServiceURL: string) => ({
       // single team app installation
       id = installation.team?.id!;
     }
-    const res = await axios.post<
-      Installation,
-      AxiosResponse<Installation, EventsToTypes['installation_request']>,
-      EventsToTypes['installation_request']
-    >(installationServiceURL, { type: 'set', id: id, payload: installation });
+    const res = await axios.post<Installation, AxiosResponse<Installation, InstallationRequest>, InstallationRequest>(
+      installationServiceURL,
+      { type: 'set', id: id, payload: installation }
+    );
     if (res.status > 299) {
       throw Error(`${res.data}`);
     }
@@ -32,11 +31,10 @@ export const getInstallationStore = (installationServiceURL: string) => ({
     if (id === null) {
       throw Error('No ID given with which to fetch');
     }
-    const res = await axios.post<
-      Installation,
-      AxiosResponse<Installation, EventsToTypes['installation_request']>,
-      EventsToTypes['installation_request']
-    >(installationServiceURL, { type: 'get', id: id });
+    const res = await axios.post<Installation, AxiosResponse<Installation, InstallationRequest>, InstallationRequest>(
+      installationServiceURL,
+      { type: 'get', id: id }
+    );
     if (res.status > 299) {
       throw Error(`${res.data}`);
     }
@@ -52,11 +50,10 @@ export const getInstallationStore = (installationServiceURL: string) => ({
     if (id === null) {
       throw Error('No ID given to delete');
     }
-    const res = await axios.post<
-      string,
-      AxiosResponse<string, EventsToTypes['installation_request']>,
-      EventsToTypes['installation_request']
-    >(installationServiceURL, { type: 'get', id: id });
+    const res = await axios.post<string, AxiosResponse<string, InstallationRequest>, InstallationRequest>(
+      installationServiceURL,
+      { type: 'get', id: id }
+    );
     if (res.status > 299) {
       throw Error(`${res.data}`);
     }

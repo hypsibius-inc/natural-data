@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { PublishFunction } from '@hypsibius/knative-faas-utils/build/publish';
+import { SlackAppInstallationSuccess } from '@hypsibius/message-types';
 import { App, Receiver, ReceiverEvent, ReceiverMultipleAckError } from '@slack/bolt';
 import { StringIndexed } from '@slack/bolt/dist/types/helpers';
 import { LogLevel, Logger } from '@slack/logger';
@@ -10,9 +12,10 @@ import httpMocks from 'node-mocks-http';
 import tsscmp from 'tsscmp';
 import { success } from './install-success';
 
-export interface FaaSJSReceiverOptions {
+export interface FaaSJSReceiverOptions<T> {
   signingSecret: string;
   logger: Logger;
+  publish: PublishFunction<T>;
   installerOptions?: InstallProviderOptions;
   scopes?: string;
   logLevel?: LogLevel;
@@ -27,7 +30,9 @@ export type Handler = (context: Context, body?: string | StringIndexed) => Promi
  * Note that this receiver does not support Slack OAuth flow.
  * For OAuth flow endpoints, deploy another Lambda function built with ExpressReceiver.
  */
-export default class FaaSJSReceiver implements Receiver {
+export default class FaaSJSReceiver<T extends { slack_app_installation_success: SlackAppInstallationSuccess }>
+  implements Receiver
+{
   private signingSecret: string;
 
   private app?: App;
@@ -40,16 +45,20 @@ export default class FaaSJSReceiver implements Receiver {
 
   private customPropertiesExtractor: (context: Context) => StringIndexed;
 
+  private publish: PublishFunction<T>;
+
   public constructor({
     signingSecret,
     logger,
+    publish,
     installerOptions = undefined,
     scopes = undefined,
     customPropertiesExtractor = (_) => ({})
-  }: FaaSJSReceiverOptions) {
+  }: FaaSJSReceiverOptions<T>) {
     // Initialize instance variables, substituting defaults for each value
     this.signingSecret = signingSecret;
     this.logger = logger;
+    this.publish = publish;
     this.customPropertiesExtractor = customPropertiesExtractor;
     if (installerOptions) {
       if (!scopes) {
@@ -155,7 +164,24 @@ export default class FaaSJSReceiver implements Receiver {
       if (context.query && context.query.code && context.query.state && this.installer && this.scopes) {
         return await this.callWithReqRes(
           async (req, res) => {
-            await this.installer!.handleCallback(req, res, { success }, { scopes: this.scopes! });
+            await this.installer!.handleCallback(
+              req,
+              res,
+              {
+                success: (installation, ...args) => {
+                  success(installation, ...args);
+                  const id = installation.isEnterpriseInstall ? installation.enterprise!.id : installation.team!.id;
+                  this.publish({
+                    type: 'slack_app_installation_success',
+                    data: {
+                      id: id,
+                      payload: installation
+                    }
+                  });
+                }
+              },
+              { scopes: this.scopes! }
+            );
           },
           context,
           body
