@@ -1,20 +1,25 @@
 import { Context, EventFromType, Installation, SlackEvent } from '@slack/bolt';
-import { ChatPostMessageArguments, ChatPostMessageResponse, WebClient } from '@slack/web-api';
+import { ChatPostMessageArguments, ChatPostMessageResponse, WebClientOptions } from '@slack/web-api';
 import { Channel } from '@slack/web-api/dist/response/ConversationsListResponse';
 import { Profile } from '@slack/web-api/dist/response/UsersProfileGetResponse';
 
-new WebClient().conversations.members();
+export interface WebClientParams {
+  token: string;
+  options?: WebClientOptions;
+}
+
+export interface WebClientEvent {
+  webClientParams: WebClientParams;
+}
 
 export interface HypsibiusSlackEvent<T extends string = string> {
   context: Context;
   payload: EventFromType<T>;
 }
-export interface SlackSendMessage {
-  context: Context;
+export interface SlackSendMessage extends WebClientEvent {
   args: ChatPostMessageArguments;
 }
-export interface SlackSendMessageResponse {
-  context: Context;
+export interface SlackSendMessageResponse extends WebClientEvent {
   res: ChatPostMessageResponse;
 }
 export type InstallationRequest = {

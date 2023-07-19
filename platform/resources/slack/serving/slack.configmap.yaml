@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: slack-config
+  namespace: slack
+data:
+  app.scopes: chat:write,channels:history,channels:read,commands,dnd:read,files:read,groups:history,groups:read,im:history,im:read,metadata.message:read,mpim:history,mpim:read,team:read,users.profile:read,users:read,users:read.email

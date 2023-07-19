@@ -8,6 +8,7 @@
     "url": ""
   },
   "scripts": {
+    "install-utils": "rm -rf ./utils && mkdir -p ./utils && tar -cO ../../utils | tar -x && npm i --save ./utils/*",
     "build": "npx -p typescript tsc",
     "pretest": "npm run lint && npm run build",
     "test:unit": "ts-node node_modules/tape/bin/tape test/unit.ts",
@@ -34,7 +35,8 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
-    "@hypsibius/message-types": "^0.0.14",
+    "@hypsibius/knative-faas-utils": "file:utils/knative-faas-utils",
+    "@hypsibius/message-types": "file:utils/message-types",
     "@types/mongodb": "^4.0.7",
     "@types/node": "^16.11.12",
     "faas-js-runtime": "^1.1.0",

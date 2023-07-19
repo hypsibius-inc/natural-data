@@ -41,6 +41,17 @@ Use the func CLI (knative plugin) to create new functions within the functions d
 When deploying, you might get an error. Run `npm upgrade` to resolve.
 When choosing a registry, you can deploy `localhost:5000` and specify that in the `func.yaml` that's generated for each function.
 
+Add the npm script to your `package.json`
+```json
+{
+  "scripts": {
+    "install-utils": "rm -rf ./utils && mkdir -p ./utils && tar -cO ../../utils | tar -x && npm i --save ./utils/*"
+  }
+}
+```
+Add `/utils` to the generated `.gitignore`.
+Whenever updating any util in utils, be sure to run `npm run install utils` on the functions relevant to the change.
+
 Use the [@hypsibius/knative-faas-utils](./utils/knative-faas-utils/) package to publish messages between functions.
 ```typescript
 import { getPublishFunction } from '@hypsibius/knative-faas-utils';

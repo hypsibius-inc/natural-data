@@ -6,10 +6,6 @@ import { Logger, Context as FaaSContext } from 'faas-js-runtime';
 
 let logger: SlackLogger;
 
-if (!process.env.SLACK_BOT_TOKEN) {
-  throw Error('Missing Slack Env vars');
-}
-
 function initialize(log: Logger): SlackLogger {
   if (!logger) {
     logger = new SlackLogger(log);
@@ -50,14 +46,15 @@ const handle = async (
   }
   context.log.info(`DATA: ${JSON.stringify(cloudevent.data)}`);
   try {
-    const client = new WebClient(cloudevent.data.context.botToken, {
+    const client = new WebClient(cloudevent.data.webClientParams.token, {
+      ...cloudevent.data.webClientParams.options,
       logger: initialize(context.log)
     });
     return new CloudEvent<EventsToTypes['slack_send_message_response']>({
       source: source,
       data: {
         res: await client.chat.postMessage(cloudevent.data.args),
-        context: cloudevent.data.context
+        webClientParams: cloudevent.data.webClientParams
       },
       type: 'slack_send_message_response'
     });

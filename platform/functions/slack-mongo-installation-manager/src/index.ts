@@ -1,4 +1,4 @@
-import { EventsToTypes } from '@hypsibius/message-types';
+import { InstallationRequest } from '@hypsibius/message-types';
 import { Installation } from '@hypsibius/message-types/mongo';
 import { Context, StructuredReturn } from 'faas-js-runtime';
 import mongoose from 'mongoose';
@@ -33,7 +33,7 @@ const init = () => {
  * @param {string} context.httpVersion the HTTP protocol version
  * See: https://github.com/knative/func/blob/main/docs/guides/nodejs.md#the-context-object
  */
-const handle = async (_context: Context, body: EventsToTypes['installation_request']): Promise<StructuredReturn> => {
+const handle = async (_context: Context, body: InstallationRequest): Promise<StructuredReturn> => {
   switch (body.type) {
     case 'set':
       try {
@@ -44,7 +44,10 @@ const handle = async (_context: Context, body: EventsToTypes['installation_reque
             payload: body.payload
           },
           {
-            upsert: true
+            upsert: true,
+            new: true,
+            projection: 'version',
+            lean: true
           }
         ).exec();
         return {
