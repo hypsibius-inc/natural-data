@@ -36,6 +36,10 @@
   * ```bash
     func deploy --path functions/<func>
     ```
+## Deploying functions
+Execute this [helper script](./functions/deploy.bash) to deploy all functions.
+
+**WARNING: this does not guarantee deployment order by dependence.**
 ## Adding functions
 Use the func CLI (knative plugin) to create new functions within the functions directory.
 When deploying, you might get an error. Run `npm upgrade` to resolve.
