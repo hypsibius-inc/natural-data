@@ -14,7 +14,6 @@ build:
 run:
   envs:
   - name: MONGODB_CONNECTION
-    value: '{{ secret:conf-mongodb-admin-slack-conf-admin:connectionString.standardSrv
-      }}'
+    value: '{{ secret:conf-mongodb-admin-slack-conf-admin:connectionString.standardSrv }}'
 deploy:
   namespace: mongodb
