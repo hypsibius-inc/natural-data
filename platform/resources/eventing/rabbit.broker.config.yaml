@@ -2,7 +2,7 @@ apiVersion: eventing.knative.dev/v1alpha1
 kind: RabbitmqBrokerConfig
 metadata:
   name: rabbit-broker-config
-  namespace: eventing
+  namespace: knative-eventing
 spec:
   rabbitmqClusterReference:
     name: rabbit-cluster
