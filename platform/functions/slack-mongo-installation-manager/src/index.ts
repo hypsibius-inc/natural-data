@@ -44,7 +44,7 @@ const handle = async (_context: Context, body: InstallationRequest): Promise<Str
             payload: body.payload
           },
           {
-            // Cannot set "projection", because there's a post-hook that 
+            // Cannot set "projection", because there's a post-hook that
             // relies on the values of the response
             upsert: true,
             new: true,
@@ -61,7 +61,7 @@ const handle = async (_context: Context, body: InstallationRequest): Promise<Str
         };
       }
     case 'get':
-      const getDoc = await Installation.findById(body.id, { lean: true }).exec();
+      const getDoc = await Installation.findById(body.id).lean();
       if (!getDoc) {
         return {
           statusCode: 404,

@@ -48,7 +48,7 @@ function initialize(context: Context): FaaSJSReceiver<EventsToTypes & SlackEvent
         installUrlOptions: {
           scopes: scopes
         },
-        installationStore: getInstallationStore(installationServiceURL)
+        installationStore: getInstallationStore(installationServiceURL, logger)
       },
       scopes: scopes
     });

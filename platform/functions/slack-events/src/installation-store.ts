@@ -1,9 +1,10 @@
+import { SlackLogger } from '@hypsibius/knative-faas-utils';
 import { InstallationRequest } from '@hypsibius/message-types';
 import { type Installation } from '@hypsibius/message-types/mongo';
 import { Installation as InstallationInterface, InstallationQuery } from '@slack/bolt';
 import axios, { AxiosResponse } from 'axios';
 
-export const getInstallationStore = (installationServiceURL: string) => ({
+export const getInstallationStore = (installationServiceURL: string, logger: SlackLogger) => ({
   storeInstallation: async (installation: InstallationInterface): Promise<void> => {
     let id: string;
     if (installation.isEnterpriseInstall) {
@@ -38,6 +39,7 @@ export const getInstallationStore = (installationServiceURL: string) => ({
     if (res.status > 299) {
       throw Error(`${res.data}`);
     }
+    logger.debug(`Fetched Installation ${JSON.stringify(res.data)}`);
     return res.data.payload;
   },
   deleteInstallation: async <T extends boolean>(installQuery: InstallationQuery<T>): Promise<void> => {

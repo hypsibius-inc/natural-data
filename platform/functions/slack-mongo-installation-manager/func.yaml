@@ -3,7 +3,7 @@ name: slack-mongo-installation-manager
 runtime: typescript
 registry: localhost:5000/
 image: localhost:5000/slack-mongo-installation-manager:latest
-imageDigest: sha256:9d96b46b19ec56072fc8079d2f3be1ed3ef85ee12b825deeebc29a1532f585fa
+imageDigest: sha256:7fd649bcb941a8b61d6ee6444a31f212b4ad03bcbae1173226b1598c04daa1d7
 created: 2023-07-13T20:17:44.531303169-06:00
 build:
   builder: pack
@@ -14,6 +14,7 @@ build:
 run:
   envs:
   - name: MONGODB_CONNECTION
-    value: '{{ secret:conf-mongodb-admin-slack-conf-admin:connectionString.standardSrv }}'
+    value: '{{ secret:conf-mongodb-admin-slack-conf-admin:connectionString.standardSrv
+      }}'
 deploy:
   namespace: mongodb
