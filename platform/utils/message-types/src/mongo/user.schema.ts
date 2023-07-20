@@ -25,6 +25,7 @@ export const UserSchema = new Schema({
     required: true,
     type: [
       {
+        _id: false,
         installation: {
           required: true,
           type: mongoose.Schema.Types.ObjectId,
