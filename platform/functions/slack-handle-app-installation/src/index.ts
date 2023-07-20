@@ -47,41 +47,53 @@ const handle = async (
     return response;
   }
   _context.log.info(`Received Event: ${JSON.stringify(cloudevent.data)}`);
-  const api = new WebClient(cloudevent.data.payload.bot!.token, {
-    logger: initialize(_context.log)
-  });
-  for (const conv of (await api.conversations.list({})).channels || []) {
-    if (!conv.is_im && !conv.is_private && !conv.is_member) {
-      const resp = await api.conversations.join({
-        channel: conv.id!
-      });
-      if (!resp.ok) {
-        _context.log.error(`Failed to join channel ${conv.id} with message: ${resp.error}`);
+  try {
+    const api = new WebClient(cloudevent.data.payload.bot!.token, {
+      logger: initialize(_context.log)
+    });
+    for (const conv of (await api.conversations.list({})).channels || []) {
+      if (!conv.is_im && !conv.is_private && !conv.is_member) {
+        const resp = await api.conversations.join({
+          channel: conv.id!
+        });
+        if (!resp.ok) {
+          _context.log.error(`Failed to join channel ${conv.id} with message: ${resp.error}`);
+        }
       }
     }
-  }
-  try {
-    const profile = await api.users.profile.get({
-      user: cloudevent.data.payload.user.id
-    });
-    if (profile.ok && profile.profile) {
-      await publish({
-        type: 'slack_user_installed_app',
-        data: {
-          installation: cloudevent.data.payload,
-          installationId: cloudevent.data.id,
-          profile: profile.profile,
-        }
+    try {
+      const profile = await api.users.profile.get({
+        user: cloudevent.data.payload.user.id
       });
-    } else {
+      if (profile.ok && profile.profile) {
+        await publish({
+          type: 'slack_user_installed_app',
+          data: {
+            installation: cloudevent.data.payload,
+            installationId: cloudevent.data.id,
+            profile: profile.profile
+          }
+        });
+      } else {
+        _context.log.error(`Profile of ${cloudevent.data.payload.user.id} returned empty`);
+        const response: CloudEvent<EventsToTypes['error']> = new CloudEvent({
+          type: 'error',
+          data: new Error(`Profile of ${cloudevent.data.payload.user.id} returned empty`),
+          source: source
+        });
+        return response;
+      }
+    } catch (e) {
+      _context.log.error(JSON.stringify(e));
       const response: CloudEvent<EventsToTypes['error']> = new CloudEvent({
         type: 'error',
-        data: new Error(`Profile of ${cloudevent.data.payload.user.id} returned empty`),
+        data: e as Error,
         source: source
       });
       return response;
     }
   } catch (e) {
+    _context.log.error(JSON.stringify(e));
     const response: CloudEvent<EventsToTypes['error']> = new CloudEvent({
       type: 'error',
       data: e as Error,
