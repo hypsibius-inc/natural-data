@@ -13,3 +13,18 @@ spec:
     limits:
       cpu: 2000m
       memory: 2Gi
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rabbit-cluster-external-svc
+  namespace: rabbit
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: rabbit-cluster
+  ports:
+    - protocol: TCP
+      nodePort: 30303
+      port: 15672
+      targetPort: 15672
