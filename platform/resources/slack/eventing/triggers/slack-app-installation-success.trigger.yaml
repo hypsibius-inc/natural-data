@@ -1,0 +1,16 @@
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: slack-app-installation-success
+  namespace: slack
+spec:
+  broker: rabbit-broker
+  filter:
+    attributes:
+      type: slack_app_installation_success
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: slack-handle-app-installation
+      namespace: slack

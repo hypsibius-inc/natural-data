@@ -1,0 +1,16 @@
+specVersion: 0.35.0
+name: slack-handle-app-installation
+runtime: typescript
+registry: localhost:5000/
+image: localhost:5000/slack-handle-app-installation:latest
+imageDigest: sha256:09a1c48e90ddf53834dd73376bf5e5dd4229fc53caa725a90876bf116ba97920
+created: 2023-07-19T10:08:31.488671707-06:00
+invoke: cloudevent
+build:
+  builder: pack
+  buildEnvs:
+  - name: BP_NODE_RUN_SCRIPTS
+    value: build
+  pvcSize: 256Mi
+deploy:
+  namespace: slack
