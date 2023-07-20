@@ -5,3 +5,11 @@ metadata:
   namespace: rabbit
   annotations:
     rabbitmq.com/topology-allowed-namespaces: "*"
+spec:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 2Gi
+    limits:
+      cpu: 2000m
+      memory: 2Gi

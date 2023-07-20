@@ -1,16 +1,15 @@
 apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
-  name: slack-app-home-opened
+  name: slack-send-message
   namespace: slack
 spec:
-  broker: rabbit-broker
+  broker: default
   filter:
     attributes:
-      type: app_home_opened
+      type: slack_send_message
   subscriber:
     ref:
       apiVersion: v1
       kind: Service
-      name: slack-app-home-opened
-      namespace: slack
+      name: slack-send-message

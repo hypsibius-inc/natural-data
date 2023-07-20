@@ -44,9 +44,10 @@ const handle = async (_context: Context, body: InstallationRequest): Promise<Str
             payload: body.payload
           },
           {
+            // Cannot set "projection", because there's a post-hook that 
+            // relies on the values of the response
             upsert: true,
             new: true,
-            projection: 'version',
             lean: true
           }
         ).exec();

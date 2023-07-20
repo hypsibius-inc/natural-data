@@ -1,0 +1,25 @@
+apiVersion: flows.knative.dev/v1
+kind: Parallel
+metadata:
+  name: distribute-to-brokers
+  namespace: eventing
+spec:
+  branches:
+    - subscriber:
+        ref:
+          apiVersion: eventing.knative.dev/v1
+          kind: Broker
+          name: default
+          namespace: slack
+    - subscriber:
+        ref:
+          apiVersion: eventing.knative.dev/v1
+          kind: Broker
+          name: default
+          namespace: mongodb
+    - subscriber:
+        ref:
+          apiVersion: eventing.knative.dev/v1
+          kind: Broker
+          name: default
+          namespace: global-funcs
