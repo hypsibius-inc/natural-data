@@ -8,7 +8,7 @@
     "url": ""
   },
   "scripts": {
-    "install-utils": "rm -rf ./utils && mkdir -p ./utils && tar -cO ../../utils | tar -x && npm i --save ./utils/*",
+    "install-utils": "rm -rf ./tarballs && mkdir -p ./tarballs && cp -r ../../utils/tarballs/ ./ && npm i --save ./tarballs/*",
     "build": "npx -p typescript tsc",
     "pretest": "npm run lint && npm run build",
     "test:unit": "ts-node node_modules/tape/bin/tape test/unit.ts",
@@ -35,8 +35,8 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
-    "@hypsibius/knative-faas-utils": "file:utils/knative-faas-utils",
-    "@hypsibius/message-types": "file:utils/message-types",
+    "@hypsibius/knative-faas-utils": "file:tarballs/hypsibius-knative-faas-utils-0.0.13.tgz",
+    "@hypsibius/message-types": "file:tarballs/hypsibius-message-types-0.0.18.tgz",
     "@slack/bolt": "^3.13.1",
     "@types/node": "^16.11.12",
     "axios": "^1.4.0",

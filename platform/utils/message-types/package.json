@@ -3,7 +3,7 @@
   "version": "0.0.18",
   "description": "Types package for messages between Hypsibius Platform functions",
   "scripts": {
-    "publish": "npm run build && ../../functions/update.bash",
+    "publish": "npm pack --pack-destination ../tarballs/ && ../../functions/update.bash",
     "build": "npx -p typescript tsc",
     "pretest": "npm run lint && npm run build",
     "prepare": "npm run build",

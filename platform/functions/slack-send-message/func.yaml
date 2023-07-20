@@ -3,12 +3,16 @@ name: slack-send-message
 runtime: typescript
 registry: localhost:5000/
 image: localhost:5000/slack-send-message:latest
-imageDigest: sha256:b7756d44c0a566638389c3feb91da1743772fffa569d3ba977121c8a05cc1920
+imageDigest: sha256:f6922e51fa6eada4ff43317a89c2b8240ec72f2430c938c8be432abca1be0f18
 created: 2023-07-12T13:48:27.107045251-06:00
 invoke: cloudevent
 build:
   builder: pack
   buildEnvs:
+  - name: BP_NODE_PROJECT_PATH
+    value: ./
+  - name: NODE_PROJECT_PATH
+    value: ./
   - name: BP_NODE_RUN_SCRIPTS
     value: build
   pvcSize: 256Mi
