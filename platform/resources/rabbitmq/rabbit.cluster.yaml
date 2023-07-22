@@ -1,0 +1,30 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: rabbit-cluster
+  namespace: rabbit
+  annotations:
+    rabbitmq.com/topology-allowed-namespaces: "*"
+spec:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 2Gi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rabbit-cluster-external-svc
+  namespace: rabbit
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: rabbit-cluster
+  ports:
+    - protocol: TCP
+      nodePort: 30303
+      port: 15672
+      targetPort: 15672

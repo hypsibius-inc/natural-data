@@ -1,0 +1,20 @@
+specVersion: 0.35.0
+name: slack-send-message
+runtime: typescript
+registry: localhost:5000/
+image: localhost:5000/slack-send-message:latest
+imageDigest: sha256:38b5246748fc9b05caa57979c646c33a1e3d3e0d5bd2022035fe0608c97af3db
+created: 2023-07-12T13:48:27.107045251-06:00
+invoke: cloudevent
+build:
+  builder: pack
+  buildEnvs:
+  - name: BP_NODE_PROJECT_PATH
+    value: ./
+  - name: NODE_PROJECT_PATH
+    value: ./
+  - name: BP_NODE_RUN_SCRIPTS
+    value: build
+  pvcSize: 256Mi
+deploy:
+  namespace: slack

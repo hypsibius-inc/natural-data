@@ -1,0 +1,40 @@
+{
+  "name": "@hypsibius/message-types",
+  "version": "0.0.18",
+  "description": "Types package for messages between Hypsibius Platform functions",
+  "scripts": {
+    "publish": "npm pack --pack-destination ../tarballs/ && ../../functions/update.bash",
+    "build": "npx -p typescript tsc",
+    "pretest": "npm run lint && npm run build",
+    "prepare": "npm run build",
+    "test:unit": "ts-node node_modules/tape/bin/tape test/unit.ts",
+    "test:integration": "ts-node node_modules/tape/bin/tape test/integration.ts",
+    "test": "npm run test:unit && npm run test:integration",
+    "lint": "eslint \"src/**/*.{js,ts,tsx}\" \"test/**/*.{js,ts,tsx}\" --quiet"
+  },
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": "./build/index.js",
+    "./mongo": "./build/mongo/index.js"
+  },
+  "typesVersions": {
+    "*": {
+      "mongo": [
+        "build/mongo/index.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "build/**/*"
+  ],
+  "author": "Jonathan Rapoport <joni@hypsibius.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.4.1"
+  },
+  "dependencies": {
+    "@slack/bolt": "^3.13.2",
+    "mongoose": "^7.3.4"
+  }
+}

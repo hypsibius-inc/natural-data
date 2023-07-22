@@ -1,0 +1,36 @@
+apiVersion: networking.internal.knative.dev/v1alpha1
+kind: ClusterDomainClaim
+metadata:
+  name: sunfish-generous-imp.ngrok-free.app
+spec:
+  namespace: slack
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: DomainMapping
+metadata:
+  name: sunfish-generous-imp.ngrok-free.app
+  namespace: slack
+spec:
+  ref:
+    name: slack-events
+    kind: Service
+    apiVersion: serving.knative.dev/v1
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: slack-events-ingress
+  namespace: slack
+spec:
+  ingressClassName: ngrok
+  rules:
+  - host: sunfish-generous-imp.ngrok-free.app
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: slack-events
+            port:
+              number: 80

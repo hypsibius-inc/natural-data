@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+/platform/utils/tarballs/
+
 # C extensions
 *.so
 
@@ -154,6 +156,9 @@ cython_debug/
 
 # Binaries
 *.bin
+
+# Node
+node_modules/
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can

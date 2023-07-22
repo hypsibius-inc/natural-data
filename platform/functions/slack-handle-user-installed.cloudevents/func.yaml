@@ -1,0 +1,21 @@
+specVersion: 0.35.0
+name: slack-handle-user-installed
+runtime: typescript
+registry: localhost:5000/
+image: localhost:5000/slack-handle-user-installed:latest
+imageDigest: sha256:11129893a8e693a344196c0737d4731fe965ebfa47e05d8b858c6fd799e4b4ed
+created: 2023-07-19T10:08:31.488671707-06:00
+invoke: cloudevent
+build:
+  builder: pack
+  buildEnvs:
+  - name: BP_NODE_RUN_SCRIPTS
+    value: build
+  pvcSize: 256Mi
+run:
+  envs:
+  - name: MONGODB_CONNECTION
+    value: '{{ secret:conf-mongodb-admin-slack-conf-admin:connectionString.standardSrv
+      }}'
+deploy:
+  namespace: mongodb

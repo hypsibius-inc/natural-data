@@ -1,0 +1,118 @@
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata:
+  name: conf-mongodb
+  namespace: mongodb
+spec:
+  members: 3
+  type: ReplicaSet
+  version: "6.0.5"
+  security:
+    authentication:
+      modes: ["SCRAM"]
+  users:
+    - name: root
+      db: admin
+      passwordSecretRef:
+        name: root-password
+      roles:
+        - name: root
+          db: admin
+      scramCredentialsSecretName: root-scram
+    - name: slack-conf-admin
+      db: admin
+      passwordSecretRef:
+        name: slack-conf-admin-password
+      roles:
+        - name: dbOwner
+          db: slack-conf
+      scramCredentialsSecretName: hypsibius-scram
+  statefulSet:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: "mongodb-agent"
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 100M
+                limits:
+                  cpu: 500m
+                  memory: 300M
+            - name: "mongod"
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 500M
+                limits:
+                  cpu: 2000m
+                  memory: 2000M
+  additionalMongodConfig:
+    storage.wiredTiger.engineConfig.journalCompressor: zlib
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: root-password
+  namespace: mongodb
+type: Opaque
+data:
+  password: cm9vdA==
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: slack-conf-admin-password
+  namespace: mongodb
+type: Opaque
+data:
+  password: SHlwc2liaXVz
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: conf-mongodb-0-svc
+  namespace: mongodb
+spec:
+  type: NodePort
+  selector:
+    app: conf-mongodb-svc
+    statefulset.kubernetes.io/pod-name: conf-mongodb-0
+  ports:
+    - protocol: TCP
+      nodePort: 30717
+      port: 27017
+      targetPort: 27017
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: conf-mongodb-1-svc
+  namespace: mongodb
+spec:
+  type: NodePort
+  selector:
+    app: conf-mongodb-svc
+    statefulset.kubernetes.io/pod-name: conf-mongodb-1
+  ports:
+    - protocol: TCP
+      nodePort: 30718
+      port: 27017
+      targetPort: 27017
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: conf-mongodb-2-svc
+  namespace: mongodb
+spec:
+  type: NodePort
+  selector:
+    app: conf-mongodb-svc
+    statefulset.kubernetes.io/pod-name: conf-mongodb-2
+  ports:
+    - protocol: TCP
+      nodePort: 30719
+      port: 27017
+      targetPort: 27017

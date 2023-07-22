@@ -1,0 +1,16 @@
+specVersion: 0.35.0
+name: error-handler
+runtime: typescript
+registry: localhost:5000/
+image: localhost:5000/error-handler:latest
+imageDigest: sha256:cb4d8dc5dbb719c342f90b44b0ae0e477c4b6258a180d3a4574b0e9bc4b04a84
+created: 2023-07-19T10:08:31.488671707-06:00
+invoke: cloudevent
+build:
+  builder: pack
+  buildEnvs:
+  - name: BP_NODE_RUN_SCRIPTS
+    value: build
+  pvcSize: 256Mi
+deploy:
+  namespace: global-funcs

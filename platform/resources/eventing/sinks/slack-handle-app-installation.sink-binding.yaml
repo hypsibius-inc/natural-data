@@ -1,0 +1,19 @@
+apiVersion: sources.knative.dev/v1
+kind: SinkBinding
+metadata:
+  name: slack-handle-app-installation
+  namespace: slack
+spec:
+  subject:
+    apiVersion: apps/v1
+    kind: Deployment
+    namespace: slack
+    selector:
+      matchLabels:
+        function.knative.dev/name: slack-handle-app-installation
+  sink:
+    ref:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      name: default
+      namespace: eventing
