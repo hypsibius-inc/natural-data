@@ -1,14 +1,14 @@
 apiVersion: networking.internal.knative.dev/v1alpha1
 kind: ClusterDomainClaim
 metadata:
-  name: d2554cb6bb78-7276572338102876217.ngrok-free.app
+  name: sunfish-generous-imp.ngrok-free.app
 spec:
   namespace: slack
 ---
 apiVersion: serving.knative.dev/v1alpha1
 kind: DomainMapping
 metadata:
-  name: d2554cb6bb78-7276572338102876217.ngrok-free.app
+  name: sunfish-generous-imp.ngrok-free.app
   namespace: slack
 spec:
   ref:
@@ -24,7 +24,7 @@ metadata:
 spec:
   ingressClassName: ngrok
   rules:
-  - host: d2554cb6bb78-7276572338102876217.ngrok-free.app
+  - host: sunfish-generous-imp.ngrok-free.app
     http:
       paths:
       - path: /

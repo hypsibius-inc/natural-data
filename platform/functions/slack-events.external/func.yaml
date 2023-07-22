@@ -1,0 +1,29 @@
+specVersion: 0.35.0
+name: slack-events
+runtime: typescript
+registry: localhost:5000/
+image: localhost:5000/slack-events:latest
+imageDigest: sha256:249964eea26990ae489baac0dc482f1e625b77ed618d51ce0ad11db002b3043b
+created: 2023-07-11T12:04:55.760078359-06:00
+build:
+  builder: pack
+  buildEnvs:
+  - name: BP_NODE_RUN_SCRIPTS
+    value: build
+  pvcSize: 256Mi
+run:
+  envs:
+  - name: FUNC_LOG_LEVEL
+    value: debug
+  - name: SLACK_SIGNING_SECRET
+    value: '{{ secret:slack-secrets:slack-signing-secret }}'
+  - name: SLACK_APP_TOKEN
+    value: '{{ secret:slack-secrets:slack-app-token }}'
+  - name: SLACK_CLIENT_ID
+    value: '{{ secret:slack-secrets:slack-client-id }}'
+  - name: SLACK_CLIENT_SECRET
+    value: '{{ secret:slack-secrets:slack-client-secret }}'
+  - name: SLACK_APP_SCOPES
+    value: '{{ configMap:slack-config:app.scopes }}'
+deploy:
+  namespace: slack
