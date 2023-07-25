@@ -1,4 +1,5 @@
 import { SlackLogger, getPublishFunction } from '@hypsibius/knative-faas-utils';
+import { Values } from '@hypsibius/knative-faas-utils/utils';
 import { EventsToTypes, SlackEventsToTypes } from '@hypsibius/message-types';
 import { App } from '@slack/bolt';
 import { Context, StructuredReturn } from 'faas-js-runtime';
@@ -33,6 +34,16 @@ const installationServiceURL = 'http://slack-mongo-installation-manager.mongodb.
 
 const publish = getPublishFunction<EventsToTypes & SlackEventsToTypes>();
 
+const eventPublisher = async ({ payload, context }: Values<SlackEventsToTypes>) => {
+  await publish({
+    type: payload.type,
+    data: {
+      payload,
+      context
+    } as SlackEventsToTypes[typeof payload.type]
+  });
+};
+
 function initialize(context: Context): FaaSJSReceiver<EventsToTypes & SlackEventsToTypes> {
   if (!receiver && !app) {
     const logger = new SlackLogger(context.log);
@@ -59,15 +70,8 @@ function initialize(context: Context): FaaSJSReceiver<EventsToTypes & SlackEvent
       logger: logger
     });
 
-    app.event('app_home_opened', async ({ payload, context }) => {
-      await publish({
-        type: payload.type,
-        data: {
-          payload,
-          context
-        }
-      });
-    });
+    app.event('app_home_opened', eventPublisher);
+    app.event('member_joined_channel', eventPublisher);
   }
   return receiver;
 }
