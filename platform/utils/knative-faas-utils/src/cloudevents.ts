@@ -1,5 +1,6 @@
 import { CloudEvent } from 'cloudevents';
 import { GetSourceOptions, getSource } from './consts';
+import { ErrorLoggingOptions, errorLoggingOptionsDefaults, logIfErrorAndReturn } from './errors';
 
 export interface DefinedCloudEvent<T = undefined> extends CloudEvent<T> {
   data: T;
@@ -38,6 +39,25 @@ export const assertNotEmptyCloudEvent = <T, P, C>(
     return callback(context, cloudevent as DefinedCloudEvent<T>);
   };
 };
+
+const assertNotEmptyCloudEventWithErrorLoggingOptionsDefaults = {
+  ...AssertNotEmptyCloudEventOptionsDefaults,
+  ...errorLoggingOptionsDefaults
+}
+
+export const assertNotEmptyCloudEventWithErrorLogging = <T, P, C>(
+  callback: (context: C, cloudevent: DefinedCloudEvent<T>) => Promise<P>,
+  options: (AssertNotEmptyCloudEventOptions & ErrorLoggingOptions) = assertNotEmptyCloudEventWithErrorLoggingOptionsDefaults
+): ReturnType<typeof assertNotEmptyCloudEvent<T, P, C>> => {
+  const opts = {
+    ...assertNotEmptyCloudEventWithErrorLoggingOptionsDefaults,
+    ...options,
+  }
+  const func = assertNotEmptyCloudEvent(callback, opts);
+  return async (...args): ReturnType<typeof func> => {
+    return logIfErrorAndReturn(await func(...args), opts);
+  };
+}
 
 export const tryCatch = <T = undefined>(
   callback: () => T,

@@ -3,7 +3,7 @@ name: slack-send-message
 runtime: typescript
 registry: localhost:5000/
 image: localhost:5000/slack-send-message:latest
-imageDigest: sha256:38b5246748fc9b05caa57979c646c33a1e3d3e0d5bd2022035fe0608c97af3db
+imageDigest: sha256:cf208fcfc23f82242962fb9af7e1e04da1712c328604e2ee12657a368756eddd
 created: 2023-07-12T13:48:27.107045251-06:00
 invoke: cloudevent
 build:

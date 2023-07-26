@@ -1,4 +1,4 @@
-import { DefinedCloudEvent, assertNotEmptyCloudEvent, asyncTryCatch } from '@hypsibius/knative-faas-utils';
+import { DefinedCloudEvent, assertNotEmptyCloudEventWithErrorLogging, asyncTryCatch } from '@hypsibius/knative-faas-utils';
 import { SlackUserInstalledApp } from '@hypsibius/message-types';
 import { InstallationHistory, User } from '@hypsibius/message-types/mongo';
 import { Context, StructuredReturn } from 'faas-js-runtime';
@@ -15,7 +15,7 @@ const init = () => {
   });
 };
 
-const handle = assertNotEmptyCloudEvent(
+const handle = assertNotEmptyCloudEventWithErrorLogging(
   async (
     _context: Context,
     cloudevent: DefinedCloudEvent<SlackUserInstalledApp>
