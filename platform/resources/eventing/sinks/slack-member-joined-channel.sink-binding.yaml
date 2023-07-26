@@ -1,0 +1,19 @@
+apiVersion: sources.knative.dev/v1
+kind: SinkBinding
+metadata:
+  name: slack-member-joined-channel
+  namespace: mongodb
+spec:
+  subject:
+    apiVersion: apps/v1
+    kind: Deployment
+    namespace: mongodb
+    selector:
+      matchLabels:
+        function.knative.dev/name: slack-member-joined-channel
+  sink:
+    ref:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      name: default
+      namespace: eventing
