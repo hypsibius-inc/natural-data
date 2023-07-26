@@ -1,0 +1,22 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel
+  namespace: observability
+spec:
+  config: |
+    receivers:
+      zipkin:
+    exporters:
+      logging:
+      jaeger:
+        endpoint: "jaeger-collector.observability:14250"
+        tls:
+          insecure: true
+
+    service:
+      pipelines:
+        traces:
+          receivers: [zipkin]
+          processors: []
+          exporters: [logging, jaeger]
