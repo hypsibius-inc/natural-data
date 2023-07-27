@@ -1,15 +1,15 @@
 apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
-  name: slack-member-joined-channel
+  name: slack-group-left
   namespace: mongodb
 spec:
   broker: default
   filter:
     attributes:
-      type: member_joined_channel
+      type: group_left
   subscriber:
     ref:
       apiVersion: v1
       kind: Service
-      name: slack-member-joined-channel
+      name: slack-channel-management

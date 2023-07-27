@@ -1,7 +1,7 @@
 apiVersion: sources.knative.dev/v1
 kind: SinkBinding
 metadata:
-  name: slack-member-joined-channel
+  name: slack-channel-management
   namespace: mongodb
 spec:
   subject:
@@ -10,7 +10,7 @@ spec:
     namespace: mongodb
     selector:
       matchLabels:
-        function.knative.dev/name: slack-member-joined-channel
+        function.knative.dev/name: slack-channel-management
   sink:
     ref:
       apiVersion: eventing.knative.dev/v1

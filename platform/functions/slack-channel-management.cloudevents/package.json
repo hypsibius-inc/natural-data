@@ -37,6 +37,7 @@
   "dependencies": {
     "@hypsibius/knative-faas-utils": "file:tarballs/hypsibius-knative-faas-utils-0.0.13.tgz",
     "@hypsibius/message-types": "file:tarballs/hypsibius-message-types-0.0.18.tgz",
+    "@slack/web-api": "^6.8.1",
     "@types/node": "^16.11.12",
     "cloudevents": "^7.0.2",
     "faas-js-runtime": "^1.1.0",
