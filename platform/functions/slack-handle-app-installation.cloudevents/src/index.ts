@@ -1,7 +1,7 @@
 import {
   DefinedCloudEvent,
   SlackLogger,
-  assertNotEmptyCloudEvent,
+  assertNotEmptyCloudEventWithErrorLogging,
   asyncTryCatch,
   getErrorCloudEvent,
   getPublishFunction
@@ -21,7 +21,7 @@ function initialize(log: Logger): SlackLogger {
   return logger;
 }
 
-const handle = assertNotEmptyCloudEvent(
+const handle = assertNotEmptyCloudEventWithErrorLogging(
   async (
     context: Context,
     cloudevent: DefinedCloudEvent<SlackAppInstallationSuccess>

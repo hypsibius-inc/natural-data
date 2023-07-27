@@ -3,7 +3,7 @@ name: slack-events
 runtime: typescript
 registry: localhost:5000/
 image: localhost:5000/slack-events:latest
-imageDigest: sha256:249964eea26990ae489baac0dc482f1e625b77ed618d51ce0ad11db002b3043b
+imageDigest: sha256:3e6d073ae2405c31c539f37d40a06457207831652a1413a7d7f85c7efb07f77f
 created: 2023-07-11T12:04:55.760078359-06:00
 build:
   builder: pack
@@ -27,3 +27,6 @@ run:
     value: '{{ configMap:slack-config:app.scopes }}'
 deploy:
   namespace: slack
+  options:
+    scale:
+      min: 1

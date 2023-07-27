@@ -1,6 +1,5 @@
 import { Context, EventFromType, Installation, SlackEvent } from '@slack/bolt';
 import { ChatPostMessageArguments, ChatPostMessageResponse, WebClientOptions } from '@slack/web-api';
-import { Channel } from '@slack/web-api/dist/response/ConversationsListResponse';
 import { Profile } from '@slack/web-api/dist/response/UsersProfileGetResponse';
 
 export interface WebClientParams {
@@ -44,7 +43,14 @@ export type SlackUserInstalledApp = {
 };
 export type SlackAppJoinedChannel = {
   teamId: string;
-  channel: Channel;
+  channelId: string;
+  inviter?: string;
+  members: string[];
+};
+export type SlackAppLeftChannel = {
+  teamId: string;
+  channelId: string;
+  remover?: string;
   members: string[];
 };
 
@@ -53,10 +59,11 @@ export interface EventsToTypes {
   slack_app_installation_success: SlackAppInstallationSuccess;
   slack_user_installed_app: SlackUserInstalledApp;
   slack_app_joined_channel: SlackAppJoinedChannel;
+  slack_app_left_channel: SlackAppLeftChannel;
   slack_send_message: SlackSendMessage;
   slack_send_message_response: SlackSendMessageResponse;
 }
 
 export type SlackEventsToTypes = {
-  [t in SlackEvent['type']]: HypsibiusSlackEvent<t>;
+  [t in SlackEvent['type'] | string]: HypsibiusSlackEvent<t>;
 };

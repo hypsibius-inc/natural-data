@@ -1,4 +1,5 @@
 import { SlackLogger, getPublishFunction } from '@hypsibius/knative-faas-utils';
+import { Values } from '@hypsibius/knative-faas-utils/utils';
 import { EventsToTypes, SlackEventsToTypes } from '@hypsibius/message-types';
 import { App } from '@slack/bolt';
 import { Context, StructuredReturn } from 'faas-js-runtime';
@@ -58,8 +59,7 @@ function initialize(context: Context): FaaSJSReceiver<EventsToTypes & SlackEvent
       receiver: receiver,
       logger: logger
     });
-
-    app.event('app_home_opened', async ({ payload, context }) => {
+    app.event(/.*/, async ({ payload, context }: Values<SlackEventsToTypes>) => {
       await publish({
         type: payload.type,
         data: {

@@ -1,10 +1,10 @@
-import { DefinedCloudEvent, assertNotEmptyCloudEvent, getPublishFunction } from '@hypsibius/knative-faas-utils';
+import { DefinedCloudEvent, assertNotEmptyCloudEventWithErrorLogging, getPublishFunction } from '@hypsibius/knative-faas-utils';
 import { EventsToTypes, HypsibiusSlackEvent } from '@hypsibius/message-types';
 import { Context, StructuredReturn } from 'faas-js-runtime';
 
 const publish = getPublishFunction<EventsToTypes>();
 
-const handle = assertNotEmptyCloudEvent(
+const handle = assertNotEmptyCloudEventWithErrorLogging(
   async (
     context: Context,
     cloudevent: DefinedCloudEvent<HypsibiusSlackEvent<'app_home_opened'>>

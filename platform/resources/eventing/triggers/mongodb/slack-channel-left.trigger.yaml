@@ -1,0 +1,15 @@
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: slack-channel-left
+  namespace: mongodb
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: channel_left
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: slack-channel-management

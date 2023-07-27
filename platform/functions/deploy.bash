@@ -3,7 +3,12 @@
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 action="${1:-deploy}"
+rundir=$(realpath "${2:-$SCRIPT_DIR/*/}")
 
-for dir in $SCRIPT_DIR/*/;
-    do (func $action --path $dir);
-done;
+echo "action is $action"
+echo "dir is $rundir"
+
+for dir in $rundir; do 
+  func $action --path $dir && kubectl apply -f $SCRIPT_DIR/../resources/observability/config-tracing.knative.configmap.yaml &
+done
+wait

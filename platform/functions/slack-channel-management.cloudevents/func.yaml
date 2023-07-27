@@ -1,10 +1,10 @@
 specVersion: 0.35.0
-name: slack-handle-user-installed
+name: slack-channel-management
 runtime: typescript
 registry: localhost:5000/
-image: localhost:5000/slack-handle-user-installed:latest
-imageDigest: sha256:1223476b3d43cf6f3ab12e6634a19963da1c62a2fd33b79d80bb920aa4dee1a3
-created: 2023-07-19T10:08:31.488671707-06:00
+image: localhost:5000/slack-channel-management:latest
+imageDigest: sha256:020ebb01ce4cb3166a32a0473d37a0bb1086f28931fc6f1ef362ecdbf2f212a8
+created: 2023-07-11T13:49:03.172787958-06:00
 invoke: cloudevent
 build:
   builder: pack

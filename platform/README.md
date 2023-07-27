@@ -13,8 +13,11 @@
 * [Install RabbitMQ Knative Broker](https://knative.dev/docs/eventing/brokers/broker-types/rabbitmq-broker/#install-the-rabbitmq-controller)
 * [Install the MongoDB community operator](https://github.com/mongodb/mongodb-kubernetes-operator/blob/master/docs/install-upgrade.md#install-in-a-different-namespace-using-helm)
   * In the `mongodb` namespace
+* [Install the OpenTelemtry operator](https://github.com/open-telemetry/opentelemetry-operator#getting-started)
+* [Install the Jaeger operator](https://www.jaegertracing.io/docs/latest/operator/#installing-the-operator-on-kubernetes)
 * Apply some yamls
   * [enable metrics](./resources/global/metrics-server.yaml)
+  * [enable telemetry](./resources/observability/)
   * [mongo](./resources/mongodb/mongodb.replicaset.yaml)
   * Create the rabbit namespace 
     ```bash

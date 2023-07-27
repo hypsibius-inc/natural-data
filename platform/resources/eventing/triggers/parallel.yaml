@@ -23,3 +23,16 @@ spec:
           kind: Broker
           name: default
           namespace: global-funcs
+---
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: parallel
+  namespace: eventing
+spec:
+  broker: default
+  subscriber:
+    ref:
+      apiVersion: flows.knative.dev/v1
+      kind: Parallel
+      name: distribute-to-brokers
