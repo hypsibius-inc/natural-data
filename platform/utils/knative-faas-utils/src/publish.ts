@@ -18,8 +18,9 @@ export type PublishFunction<T> = ConditionalFunc<T, publishReturnType<T>, extraP
 export const getPublishFunction = <T>(options?: PublishFunctionGenerationOptions): PublishFunction<T> => {
   const emitter = emitterFor(httpTransport(getSink(options)));
   const source = getSource(options);
-  return async (args) => {
+  return async <Key extends keyof T>(args: { type: Key; data: T[Key]; extra?: object }) => {
     const ce = new CloudEvent({
+      ...(typeof args.data === 'object' && args.data && 'context' in args.data ? args.data.context || {} : {}),
       type: String(args.type),
       source: source,
       data: args.data,

@@ -2,7 +2,7 @@ apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
   name: slack-app-home-opened
-  namespace: slack
+  namespace: mongodb
 spec:
   broker: default
   filter:

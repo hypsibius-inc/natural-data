@@ -2,12 +2,12 @@ apiVersion: sources.knative.dev/v1
 kind: SinkBinding
 metadata:
   name: slack-app-home-opened
-  namespace: slack
+  namespace: mongodb
 spec:
   subject:
     apiVersion: apps/v1
     kind: Deployment
-    namespace: slack
+    namespace: mongodb
     selector:
       matchLabels:
         function.knative.dev/name: slack-app-home-opened

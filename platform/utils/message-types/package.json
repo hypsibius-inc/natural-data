@@ -35,6 +35,6 @@
   },
   "dependencies": {
     "@slack/bolt": "^3.13.2",
-    "mongoose": "^7.3.4"
+    "mongoose": "^7.4.1"
   }
 }

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: slack
+  labels:
+    name: slack
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: eventing
+  labels:
+    name: eventing
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: global-funcs
+  labels:
+    name: global-funcs

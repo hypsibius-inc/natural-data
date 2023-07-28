@@ -75,6 +75,9 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
             const client = new WebClient(cloudevent.data.context.botToken, {
               logger: initialize(context.log)
             });
+            const info = await client.conversations.info({
+              channel: cloudevent.data.payload.channel
+            });
             const allMembers: string[] = [];
             for await (const page of client.paginate('conversations.members', {
               channel: cloudevent.data.payload.channel
@@ -91,7 +94,15 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
                   users: {
                     $each: allMembers
                   }
-                }
+                },
+                ...(info && info.channel
+                  ? {
+                      $set: {
+                        name: info.channel.name,
+                        info: info.channel
+                      }
+                    }
+                  : {})
               }
             );
             await publish({

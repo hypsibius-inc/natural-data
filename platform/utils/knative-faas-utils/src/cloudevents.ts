@@ -36,28 +36,38 @@ export const assertNotEmptyCloudEvent = <T, P, C>(
     if (!cloudevent || cloudevent.data === undefined || cloudevent.data === null) {
       return getErrorCloudEvent(calcOptions.message, calcOptions.sourceOptions);
     }
-    return callback(context, cloudevent as DefinedCloudEvent<T>);
+    return await asyncTryCatch(async () => await callback(context, cloudevent as DefinedCloudEvent<T>));
   };
 };
+
+type AssertNotEmptyCloudEventWithErrorLoggingOptions = AssertNotEmptyCloudEventOptions &
+  ErrorLoggingOptions;
 
 const assertNotEmptyCloudEventWithErrorLoggingOptionsDefaults = {
   ...AssertNotEmptyCloudEventOptionsDefaults,
   ...errorLoggingOptionsDefaults
-}
+};
 
 export const assertNotEmptyCloudEventWithErrorLogging = <T, P, C>(
-  callback: (context: C, cloudevent: DefinedCloudEvent<T>) => Promise<P>,
-  options: (AssertNotEmptyCloudEventOptions & ErrorLoggingOptions) = assertNotEmptyCloudEventWithErrorLoggingOptionsDefaults
+  callback: Parameters<typeof assertNotEmptyCloudEvent<T, P, C>>['0'],
+  options: AssertNotEmptyCloudEventWithErrorLoggingOptions & {
+    deferredLogger?: (
+      ...args: Parameters<ReturnType<typeof assertNotEmptyCloudEvent<T, P, C>>>
+    ) => NonNullable<ErrorLoggingOptions['logger']>;
+  } = assertNotEmptyCloudEventWithErrorLoggingOptionsDefaults
 ): ReturnType<typeof assertNotEmptyCloudEvent<T, P, C>> => {
   const opts = {
     ...assertNotEmptyCloudEventWithErrorLoggingOptionsDefaults,
-    ...options,
-  }
+    ...options
+  };
   const func = assertNotEmptyCloudEvent(callback, opts);
   return async (...args): ReturnType<typeof func> => {
+    if (opts.deferredLogger) {
+      opts.logger = opts.deferredLogger(...args);
+    }
     return logIfErrorAndReturn(await func(...args), opts);
   };
-}
+};
 
 export const tryCatch = <T = undefined>(
   callback: () => T,

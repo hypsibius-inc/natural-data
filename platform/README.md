@@ -19,25 +19,11 @@
   * [enable metrics](./resources/global/metrics-server.yaml)
   * [enable telemetry](./resources/observability/)
   * [mongo](./resources/mongodb/mongodb.replicaset.yaml)
-  * Create the rabbit namespace 
-    ```bash
-    kubectl create namespace rabbit
-    ```
   * [rabbit](./resources/rabbitmq/rabbit.cluster.yaml)
-  * If running locally
-    * Run 
-      ```bash
-      kubectl port-forward -n rabbit services/rabbit-cluster 15672
-      kubectl port-forward -n mongodb services/conf-mongodb-svc 27017
-      ```
   * [function related](./resources/slack/)
     ```bash
     kubectl create namespace slack
     kubectl apply -R -f resources/slack
-    ```
-* Start functions
-  * ```bash
-    func deploy --path functions/<func>
     ```
 ## Deploying functions
 Execute this [helper script](./functions/deploy.bash) to deploy all functions.
