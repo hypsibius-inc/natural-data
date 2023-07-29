@@ -7,7 +7,7 @@ spec:
   broker: default
   filter:
     attributes:
-      type: slack_send_message
+      type: hypsibius.slack.send_message
   subscriber:
     ref:
       apiVersion: v1

@@ -1,16 +1,21 @@
 export type Values<T> = T[keyof T];
 
+export type TypedObject = {
+  type: string;
+};
+
+export type TypedObjectExtractor<T extends TypedObject, V extends T['type']> = Extract<T, { type: V }>;
+
 export type ConditionalFunc<
-  T,
-  R extends Record<keyof T, any>,
-  E extends Record<keyof T, any> = never,
-  keyProp extends string = 'type',
+  T extends TypedObject,
+  R extends Record<T['type'], any>,
+  E extends Record<T['type'], any> = never,
   dataProp extends string = 'data',
   extraProp extends string = 'extra'
-> = <Key extends keyof T>(
+> = <K extends T['type'], V extends TypedObjectExtractor<T, K>>(
   args: {
-    [k in keyProp | dataProp]: k extends keyProp ? Key : k extends dataProp ? T[Key] : never;
+    [k in dataProp]: k extends dataProp ? V & { type: K } : never;
   } & {
-    [k in extraProp]?: E[Key];
+    [k in extraProp]?: E[K];
   }
-) => R[Key];
+) => R[K];

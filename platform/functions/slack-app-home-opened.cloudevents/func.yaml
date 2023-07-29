@@ -3,7 +3,7 @@ name: slack-app-home-opened
 runtime: typescript
 registry: localhost:5000/
 image: localhost:5000/slack-app-home-opened:latest
-imageDigest: sha256:fde0794d5d013b4e094a7a0605f12832a887763c82fd2c459edea0d31621190f
+imageDigest: sha256:06a202870da53f2d4b77558b91ea317d8ee5bd42ebba963af06a8b5263dd73e1
 created: 2023-07-11T13:49:03.172787958-06:00
 invoke: cloudevent
 build:

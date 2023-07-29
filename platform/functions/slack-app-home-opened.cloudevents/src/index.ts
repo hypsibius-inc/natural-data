@@ -4,14 +4,14 @@ import {
   assertNotEmptyCloudEventWithErrorLogging,
   getPublishFunction
 } from '@hypsibius/knative-faas-utils';
-import { EventsToTypes, HypsibiusSlackEvent } from '@hypsibius/message-types';
+import { HypsibiusEvent, HypsibiusSlackEvent } from '@hypsibius/message-types';
 import { Channel, User } from '@hypsibius/message-types/mongo';
 import { LogLevel, WebClient } from '@slack/web-api';
 import { Context, Logger, StructuredReturn } from 'faas-js-runtime';
 import mongoose from 'mongoose';
 import { constructHomeView } from './home-view.constructor';
 
-const publish = getPublishFunction<EventsToTypes>();
+const publish = getPublishFunction<HypsibiusEvent>();
 const MONGODB_CONNECTION: string = process.env.MONGODB_CONNECTION!;
 if (!MONGODB_CONNECTION) {
   throw Error('Env var MONGODB_CONNECTION not set');
@@ -66,7 +66,7 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
     ).lean();
     const client = new WebClient(cloudevent.data.context.botToken, {
       logger: initialize(context.log),
-      logLevel: LogLevel.DEBUG,
+      logLevel: LogLevel.DEBUG
     });
     const view = constructHomeView(user, channels);
     const resp = await client.views.publish({
@@ -77,8 +77,8 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
       throw Error(JSON.stringify(resp));
     }
     await publish({
-      type: 'slack_send_message',
       data: {
+        type: 'hypsibius.slack.send_message',
         webClientParams: {
           token: cloudevent.data.context.botToken!
         },

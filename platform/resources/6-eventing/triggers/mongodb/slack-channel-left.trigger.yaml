@@ -7,7 +7,7 @@ spec:
   broker: default
   filter:
     attributes:
-      type: channel_left
+      type: slack.event.channel_left
   subscriber:
     ref:
       apiVersion: v1

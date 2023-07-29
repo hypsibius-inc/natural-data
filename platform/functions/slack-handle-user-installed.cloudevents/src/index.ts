@@ -1,5 +1,5 @@
 import { DefinedCloudEvent, assertNotEmptyCloudEventWithErrorLogging, asyncTryCatch } from '@hypsibius/knative-faas-utils';
-import { SlackUserInstalledApp } from '@hypsibius/message-types';
+import { ErrorEvent, SlackUserInstalledApp } from '@hypsibius/message-types';
 import { InstallationHistory, User } from '@hypsibius/message-types/mongo';
 import { Context, StructuredReturn } from 'faas-js-runtime';
 import mongoose from 'mongoose';
@@ -19,7 +19,7 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
   async (
     _context: Context,
     cloudevent: DefinedCloudEvent<SlackUserInstalledApp>
-  ): Promise<DefinedCloudEvent<Error> | StructuredReturn> => {
+  ): Promise<DefinedCloudEvent<ErrorEvent> | StructuredReturn> => {
     _context.log.info(`Received Event: ${JSON.stringify(cloudevent.data)}`);
     return await asyncTryCatch<StructuredReturn>(async () => {
       const id = {

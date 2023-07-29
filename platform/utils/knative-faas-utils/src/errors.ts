@@ -34,7 +34,7 @@ export const logIfErrorAndReturn = <T>(
     typeof result[opts.statusCodeProperty] in ['string', 'number'] &&
     parseInt(result[opts.statusCodeProperty]) >= opts.minStatusCode
   ) {
-    opts.logger.error(JSON.stringify(result[opts.messageProperty]))
+    opts.logger.error(`${result[opts.messageProperty]}: ${JSON.stringify(result[opts.messageProperty])}`)
   }
   return result;
 };

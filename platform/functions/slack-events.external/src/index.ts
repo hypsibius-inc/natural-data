@@ -1,13 +1,9 @@
 import { SlackLogger, getPublishFunction } from '@hypsibius/knative-faas-utils';
-import { Values } from '@hypsibius/knative-faas-utils/utils';
-import { EventsToTypes, SlackEventsToTypes } from '@hypsibius/message-types';
+import { HypsibiusEvent, KnownActionFromType } from '@hypsibius/message-types';
 import { App } from '@slack/bolt';
 import { Context, StructuredReturn } from 'faas-js-runtime';
 import FaaSJSReceiver from './faas-js.receiver';
 import { getInstallationStore } from './installation-store';
-
-let receiver: FaaSJSReceiver<EventsToTypes & SlackEventsToTypes>;
-let app: App;
 
 const signingSecret: string = process.env.SLACK_SIGNING_SECRET!;
 if (!signingSecret) {
@@ -32,9 +28,11 @@ if (!scopes) {
 
 const installationServiceURL = 'http://slack-mongo-installation-manager.mongodb.svc.cluster.local';
 
-const publish = getPublishFunction<EventsToTypes & SlackEventsToTypes>();
+const publish = getPublishFunction<HypsibiusEvent>();
+let receiver: FaaSJSReceiver;
+let app: App;
 
-function initialize(context: Context): FaaSJSReceiver<EventsToTypes & SlackEventsToTypes> {
+function initialize(context: Context): FaaSJSReceiver {
   if (!receiver && !app) {
     const logger = new SlackLogger(context.log);
     receiver = new FaaSJSReceiver({
@@ -59,14 +57,52 @@ function initialize(context: Context): FaaSJSReceiver<EventsToTypes & SlackEvent
       receiver: receiver,
       logger: logger
     });
-    app.event(/.*/, async ({ payload, context }: Values<SlackEventsToTypes>) => {
-      await publish({
-        type: payload.type,
-        data: {
-          payload,
-          context
-        }
-      });
+    app.event(/.*/, async ({ payload, context }) => {
+      logger.warn(
+        `Published ${JSON.stringify(
+          await publish({
+            data: {
+              type: `slack.event.${payload.type}`,
+              payload: payload,
+              context
+            }
+          })
+        )}`
+      );
+    });
+    app.action(/.*/, async ({ body, payload, context, ack }) => {
+      await ack();
+      switch (body.type) {
+        case 'block_actions':
+          const p = payload as KnownActionFromType<typeof payload.type>;
+          const { actions, ...slimBody } = body;
+          logger.warn(
+            `Published ${JSON.stringify(
+              await publish({
+                data: {
+                  type: `slack.blockAction.${p.type}`,
+                  payload: p,
+                  context,
+                  body: slimBody
+                },
+                extra: {
+                  block_id: p.block_id,
+                  action_id: p.action_id
+                }
+              })
+            )}`
+          );
+          break;
+        case 'dialog_submission':
+          // Unsupported yet
+          break;
+        case 'interactive_message':
+          // Slack Legacy
+          break;
+        case 'workflow_step_edit':
+          // Unsupported yet
+          break;
+      }
     });
   }
   return receiver;

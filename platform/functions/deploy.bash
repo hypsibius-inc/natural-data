@@ -3,7 +3,7 @@
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 action="${1:-deploy}"
-rundir=$(realpath "${2:-$SCRIPT_DIR/*/}")
+rundir=$(realpath "${2:-$SCRIPT_DIR/*/}")/
 
 echo "action is $action"
 echo "dir is $rundir"

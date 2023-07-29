@@ -7,7 +7,7 @@ spec:
   broker: default
   filter:
     attributes:
-      type: error
+      type: hypsibius.error
   subscriber:
     ref:
       apiVersion: v1

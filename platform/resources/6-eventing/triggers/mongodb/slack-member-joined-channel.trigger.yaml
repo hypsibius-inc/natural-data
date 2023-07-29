@@ -7,7 +7,7 @@ spec:
   broker: default
   filter:
     attributes:
-      type: member_joined_channel
+      type: slack.event.member_joined_channel
   subscriber:
     ref:
       apiVersion: v1

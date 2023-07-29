@@ -16,23 +16,34 @@ const AssertNotEmptyCloudEventOptionsDefaults: Required<AssertNotEmptyCloudEvent
   sourceOptions: {}
 };
 
-export const getErrorCloudEvent = (e: string | Error, sourceOptions?: GetSourceOptions): DefinedCloudEvent<Error> => {
+interface ErrorData {
+  error: Error;
+  type: 'hypsibius.error';
+};
+
+export const getErrorCloudEvent = (
+  e: string | Error,
+  sourceOptions?: GetSourceOptions
+): DefinedCloudEvent<ErrorData> => {
   return new CloudEvent({
-    type: 'error',
-    data: typeof e === 'string' ? Error(e) : e,
+    type: 'hypsibius.error',
+    data: {
+      error: typeof e === 'string' ? Error(e) : e,
+      type: 'hypsibius.error'
+    },
     source: getSource(sourceOptions)
-  }) as DefinedCloudEvent<Error>;
+  }) as DefinedCloudEvent<ErrorData>;
 };
 
 export const assertNotEmptyCloudEvent = <T, P, C>(
   callback: (context: C, cloudevent: DefinedCloudEvent<T>) => Promise<P>,
   options: AssertNotEmptyCloudEventOptions = AssertNotEmptyCloudEventOptionsDefaults
-): ((context: C, cloudevent?: CloudEvent<T>) => Promise<DefinedCloudEvent<Error> | P>) => {
+): ((context: C, cloudevent?: CloudEvent<T>) => Promise<DefinedCloudEvent<ErrorData> | P>) => {
   const calcOptions: Required<AssertNotEmptyCloudEventOptions> = {
     ...AssertNotEmptyCloudEventOptionsDefaults,
     ...options
   };
-  return async (context: C, cloudevent?: CloudEvent<T>): Promise<DefinedCloudEvent<Error> | P> => {
+  return async (context: C, cloudevent?: CloudEvent<T>): Promise<DefinedCloudEvent<ErrorData> | P> => {
     if (!cloudevent || cloudevent.data === undefined || cloudevent.data === null) {
       return getErrorCloudEvent(calcOptions.message, calcOptions.sourceOptions);
     }
@@ -40,8 +51,7 @@ export const assertNotEmptyCloudEvent = <T, P, C>(
   };
 };
 
-type AssertNotEmptyCloudEventWithErrorLoggingOptions = AssertNotEmptyCloudEventOptions &
-  ErrorLoggingOptions;
+type AssertNotEmptyCloudEventWithErrorLoggingOptions = AssertNotEmptyCloudEventOptions & ErrorLoggingOptions;
 
 const assertNotEmptyCloudEventWithErrorLoggingOptionsDefaults = {
   ...AssertNotEmptyCloudEventOptionsDefaults,
@@ -72,7 +82,7 @@ export const assertNotEmptyCloudEventWithErrorLogging = <T, P, C>(
 export const tryCatch = <T = undefined>(
   callback: () => T,
   sourceOptions?: GetSourceOptions
-): T | DefinedCloudEvent<Error> => {
+): T | DefinedCloudEvent<ErrorData> => {
   try {
     return callback();
   } catch (e) {
@@ -87,7 +97,7 @@ export const tryCatch = <T = undefined>(
 export const asyncTryCatch = async <R = undefined, T extends Promise<R> = Promise<R>>(
   callback: () => T,
   sourceOptions?: GetSourceOptions
-): Promise<R | DefinedCloudEvent<Error>> => {
+): Promise<R | DefinedCloudEvent<ErrorData>> => {
   try {
     return await callback();
   } catch (e) {

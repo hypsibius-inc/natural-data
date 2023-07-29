@@ -1,30 +1,26 @@
 # The Hypsibius Platform
 ## Installing on new K8s
-* [Install Cert-Manager](https://cert-manager.io/docs/installation/helm/#steps)
-  * Follow steps 1-4
-* [Install Knative Operator](https://knative.dev/docs/install/operator/knative-with-operators/#install-the-knative-operator)
-* Install Eventing + Serving from the [resources/knative](./resources/knative/) directory by applying the yaml files
 * Install Ngrok ingress controller if needed (Domain might be supplied by cloud provider)
   * [Get auth keys](https://ngrok.com/docs/using-ngrok-with/k8s/#step-2-setup-your-kubernetes-cluster-and-install-the-ngrok-ingress-controller)
   * [Follow steps 2-4 inclusive](https://ngrok.com/docs/using-ngrok-with/k8s/#step-2-setup-your-kubernetes-cluster-and-install-the-ngrok-ingress-controller)
   * Steps 5+ are the yaml located [here](./resources/slack/serving/slack-events.ingress.yaml)
-* [Install RabbitMQ operator](https://github.com/rabbitmq/cluster-operator#quickstart)
-* [Install RabbitMQ Messaging Topology operator](https://github.com/rabbitmq/messaging-topology-operator/#quickstart)
-* [Install RabbitMQ Knative Broker](https://knative.dev/docs/eventing/brokers/broker-types/rabbitmq-broker/#install-the-rabbitmq-controller)
 * [Install the MongoDB community operator](https://github.com/mongodb/mongodb-kubernetes-operator/blob/master/docs/install-upgrade.md#install-in-a-different-namespace-using-helm)
   * In the `mongodb` namespace
-* [Install the OpenTelemtry operator](https://github.com/open-telemetry/opentelemetry-operator#getting-started)
-* [Install the Jaeger operator](https://www.jaegertracing.io/docs/latest/operator/#installing-the-operator-on-kubernetes)
-* Apply some yamls
-  * [enable metrics](./resources/global/metrics-server.yaml)
-  * [enable telemetry](./resources/observability/)
-  * [mongo](./resources/mongodb/mongodb.replicaset.yaml)
-  * [rabbit](./resources/rabbitmq/rabbit.cluster.yaml)
-  * [function related](./resources/slack/)
-    ```bash
-    kubectl create namespace slack
-    kubectl apply -R -f resources/slack
-    ```
+* Apply all yamls
+  ```bash
+  kubectl apply -Rf resources/
+  ```
+### Upgrading operators
+Download the newer resources and replace in [operators](./resources/0-operators/)
+* [Upgrade Cert-Manager](https://cert-manager.io/docs/installation/helm/#steps)
+  * Follow steps 1-4
+* [Upgrade Knative Operator](https://knative.dev/docs/install/operator/knative-with-operators/#install-the-knative-operator)
+* [Upgrade RabbitMQ operator](https://github.com/rabbitmq/cluster-operator#quickstart)
+* [Upgrade RabbitMQ Messaging Topology operator](https://github.com/rabbitmq/messaging-topology-operator/#quickstart)
+* [Upgrade RabbitMQ Knative Broker](https://knative.dev/docs/eventing/brokers/broker-types/rabbitmq-broker/#install-the-rabbitmq-controller)
+* [Upgrade the OpenTelemtry operator](https://github.com/open-telemetry/opentelemetry-operator#getting-started)
+* [Upgrade the Jaeger operator](https://www.jaegertracing.io/docs/latest/operator/#installing-the-operator-on-kubernetes)
+
 ## Deploying functions
 Execute this [helper script](./functions/deploy.bash) to deploy all functions.
 

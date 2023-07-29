@@ -5,14 +5,14 @@ import {
   asyncTryCatch,
   getPublishFunction
 } from '@hypsibius/knative-faas-utils';
-import { EventsToTypes, HypsibiusSlackEvent } from '@hypsibius/message-types';
+import { ErrorEvent, HypsibiusEvent, HypsibiusSlackEvent } from '@hypsibius/message-types';
 import { Channel } from '@hypsibius/message-types/mongo';
+import { ConversationsMembersResponse, WebClient } from '@slack/web-api';
 import { CloudEvent } from 'cloudevents';
 import { Context, Logger, StructuredReturn } from 'faas-js-runtime';
-import { ConversationsMembersResponse, WebClient } from '@slack/web-api';
 import mongoose from 'mongoose';
 
-const publish = getPublishFunction<EventsToTypes>();
+const publish = getPublishFunction<HypsibiusEvent>();
 let logger: SlackLogger;
 
 function initialize(log: Logger): SlackLogger {
@@ -42,7 +42,7 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
       | HypsibiusSlackEvent<'channel_left'>
       | HypsibiusSlackEvent<'group_left'>
     >
-  ): Promise<StructuredReturn | CloudEvent<Error>> => {
+  ): Promise<StructuredReturn | CloudEvent<ErrorEvent>> => {
     return await asyncTryCatch(async () => {
       switch (cloudevent.data.payload.type) {
         case 'member_joined_channel':
@@ -106,8 +106,8 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
               }
             );
             await publish({
-              type: 'slack_app_joined_channel',
               data: {
+                type: 'hypsibius.slack.app_joined_channel',
                 teamId: cloudevent.data.payload.team,
                 channelId: cloudevent.data.payload.channel,
                 inviter: cloudevent.data.payload.inviter,
@@ -133,8 +133,8 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
           );
           if (prevLeft && prevLeft.activeBot && cloudevent.data.payload.user === cloudevent.data.context.botUserId) {
             await publish({
-              type: 'slack_app_left_channel',
               data: {
+                type: 'hypsibius.slack.app_left_channel',
                 teamId: cloudevent.data.payload.team,
                 channelId: cloudevent.data.payload.channel,
                 members: prevLeft.users
@@ -145,8 +145,10 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
         case 'channel_left':
           if (!cloudevent.data.context.teamId || !cloudevent.data.context.botUserId) {
             await publish({
-              type: 'error',
-              data: Error(`No teamId or botUserId in context: ${JSON.stringify(cloudevent.data.context)}`)
+              data: {
+                type: 'hypsibius.error',
+                error: Error(`No teamId or botUserId in context: ${JSON.stringify(cloudevent.data.context)}`)
+              }
             });
           } else {
             const prevLeftChannel = await Channel.findOneAndUpdate(
@@ -165,8 +167,8 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
             );
             if (prevLeftChannel) {
               await publish({
-                type: 'slack_app_left_channel',
                 data: {
+                  type: 'hypsibius.slack.app_left_channel',
                   teamId: cloudevent.data.context.teamId,
                   channelId: cloudevent.data.payload.channel,
                   remover: cloudevent.data.payload.actor_id,
@@ -179,8 +181,10 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
         case 'group_left':
           if (!cloudevent.data.context.teamId || !cloudevent.data.context.botUserId) {
             await publish({
-              type: 'error',
-              data: Error(`No teamId or botUserId in context: ${JSON.stringify(cloudevent.data.context)}`)
+              data: {
+                error: Error(`No teamId or botUserId in context: ${JSON.stringify(cloudevent.data.context)}`),
+                type: 'hypsibius.error'
+              }
             });
           } else {
             const prevLeftChannel = await Channel.findOneAndUpdate(
@@ -199,8 +203,8 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
             );
             if (prevLeftChannel) {
               await publish({
-                type: 'slack_app_left_channel',
                 data: {
+                  type: 'hypsibius.slack.app_left_channel',
                   teamId: cloudevent.data.context.teamId,
                   channelId: cloudevent.data.payload.channel,
                   remover: cloudevent.data.payload.actor_id,

@@ -6,11 +6,11 @@ import {
   getErrorCloudEvent,
   getPublishFunction
 } from '@hypsibius/knative-faas-utils';
-import { EventsToTypes, SlackAppInstallationSuccess } from '@hypsibius/message-types';
+import { ErrorEvent, HypsibiusEvent, SlackAppInstallationSuccess } from '@hypsibius/message-types';
 import { WebClient } from '@slack/web-api';
 import { Context, Logger, StructuredReturn } from 'faas-js-runtime';
 
-const publish = getPublishFunction<EventsToTypes>();
+const publish = getPublishFunction<HypsibiusEvent>();
 
 let logger: SlackLogger;
 
@@ -25,9 +25,9 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
   async (
     context: Context,
     cloudevent: DefinedCloudEvent<SlackAppInstallationSuccess>
-  ): Promise<DefinedCloudEvent<EventsToTypes['error']> | StructuredReturn> => {
+  ): Promise<DefinedCloudEvent<ErrorEvent> | StructuredReturn> => {
     context.log.info(`Received Event: ${JSON.stringify(cloudevent.data)}`);
-    const ret = await asyncTryCatch<DefinedCloudEvent<Error> | undefined>(async () => {
+    const ret = await asyncTryCatch<DefinedCloudEvent<ErrorEvent> | undefined>(async () => {
       const api = new WebClient(cloudevent.data.payload.bot!.token, {
         logger: initialize(context.log)
       });
@@ -41,14 +41,14 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
           }
         }
       }
-      return await asyncTryCatch<DefinedCloudEvent<Error> | undefined>(async () => {
+      return await asyncTryCatch<DefinedCloudEvent<ErrorEvent> | undefined>(async () => {
         const profile = await api.users.profile.get({
           user: cloudevent.data.payload.user.id
         });
         if (profile.ok && profile.profile) {
           await publish({
-            type: 'slack_user_installed_app',
             data: {
+              type: 'hypsibius.slack.user_installed_app',
               installation: cloudevent.data.payload,
               installationId: cloudevent.data.id,
               profile: profile.profile

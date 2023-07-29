@@ -7,7 +7,7 @@ spec:
   broker: default
   filter:
     attributes:
-      type: slack_app_installation_success
+      type: hypsibius.slack.app_installation_success
   subscriber:
     ref:
       apiVersion: v1

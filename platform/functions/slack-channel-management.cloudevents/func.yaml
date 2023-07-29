@@ -3,7 +3,7 @@ name: slack-channel-management
 runtime: typescript
 registry: localhost:5000/
 image: localhost:5000/slack-channel-management:latest
-imageDigest: sha256:9bf8b29d01d0e4648e0a96db22805005c22b9f30555610996ca8a9f7d8d1a842
+imageDigest: sha256:936ad83def356dce2abce0900852c3d6ce360ece415740467c514ab7abf21ab3
 created: 2023-07-11T13:49:03.172787958-06:00
 invoke: cloudevent
 build:
