@@ -2,7 +2,7 @@ apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
   name: slack-send-message
-  namespace: slack
+  namespace: eventing
 spec:
   broker: default
   filter:
@@ -13,3 +13,4 @@ spec:
       apiVersion: v1
       kind: Service
       name: slack-send-message
+      namespace: slack

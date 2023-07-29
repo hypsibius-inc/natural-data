@@ -1,15 +1,16 @@
 apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
-  name: slack-channel-left
-  namespace: mongodb
+  name: error
+  namespace: eventing
 spec:
   broker: default
   filter:
     attributes:
-      type: slack.event.channel_left
+      type: hypsibius.error
   subscriber:
     ref:
       apiVersion: v1
       kind: Service
-      name: slack-channel-management
+      name: error-handler
+      namespace: global-funcs

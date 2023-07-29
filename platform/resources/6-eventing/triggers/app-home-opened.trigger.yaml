@@ -1,15 +1,16 @@
 apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
-  name: error
-  namespace: global-funcs
+  name: slack-app-home-opened
+  namespace: eventing
 spec:
   broker: default
   filter:
     attributes:
-      type: hypsibius.error
+      type: slack.event.app_home_opened
   subscriber:
     ref:
       apiVersion: v1
       kind: Service
-      name: error-handler
+      name: slack-app-home-opened
+      namespace: mongodb

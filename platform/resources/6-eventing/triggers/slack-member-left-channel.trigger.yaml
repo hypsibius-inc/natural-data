@@ -1,15 +1,16 @@
 apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
-  name: slack-user-installed-app
-  namespace: mongodb
+  name: slack-member-left-channel
+  namespace: eventing
 spec:
   broker: default
   filter:
     attributes:
-      type: hypsibius.slack.user_installed_app
+      type: slack.event.member_left_channel
   subscriber:
     ref:
       apiVersion: v1
       kind: Service
-      name: slack-handle-user-installed
+      name: slack-channel-management
+      namespace: mongodb
