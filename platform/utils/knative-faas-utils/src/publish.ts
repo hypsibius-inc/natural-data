@@ -20,9 +20,10 @@ export type PublishFunction<T extends TypedObject> = ConditionalFunc<T, publishR
 const cloudeventAttributeName = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
 
 const cloudEventAttributes = (o?: object): object => {
+  console.warn(`Converting ${JSON.stringify(o)} to cloudAttributes`);
   return Object.fromEntries(
     Object.entries(o || {})
-      .filter(([_, v]) => typeof v in ["object", "string", "number", "boolean"])
+      .filter(([_, v]) => ["object", "string", "number", "boolean"].includes(typeof v))
       .map(([k, v]) => [cloudeventAttributeName(k), v])
   );
 };
@@ -36,11 +37,15 @@ export const getPublishFunction = <T extends TypedObject>(
     data: V & { type: K };
     extra?: object;
   }): Promise<DefinedCloudEvent<V>> => {
-    const ce = new CloudEvent({
+    const extraAttributes = {
       ...cloudEventAttributes(
         typeof args.data === 'object' && args.data && 'context' in args.data ? (args.data.context as Context) : {}
       ),
       ...cloudEventAttributes(args.extra),
+    }
+    console.error(`EXTRA attributes: ${JSON.stringify(extraAttributes)}`)
+    const ce = new CloudEvent({
+      ...extraAttributes,
       type: args.data.type,
       source: source,
       data: args.data

@@ -47,7 +47,8 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
       }
     })
       .populate('activeChannels')
-      .lean();
+      .lean()
+      .exec();
     if (!user) {
       throw Error(`Couldn't find user ${cloudevent.data.payload.user} at ${cloudevent.data.context.teamId}`);
     }

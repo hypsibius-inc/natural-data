@@ -21,6 +21,7 @@ const constructLabels = (labels: User['labels']): Block[] => {
           text: 'Edit',
           emoji: true
         },
+        action_id: `label.edit.${l.id}`,
         value: `label.edit.${l.id}`
       }
     },
@@ -105,14 +106,13 @@ export const constructHomeView = (user: User, channels: Channel[]): HomeView => 
       },
       {
         type: 'input',
-        block_id: 'conversationsSelectSection',
         dispatch_action: true,
         label: {
           type: 'plain_text',
           text: 'Select the conversations in which to activate Dini:'
         },
         element: {
-          action_id: 'conversationsSelect',
+          action_id: 'conversations.select',
           type: 'multi_static_select',
           options: options,
           placeholder: {

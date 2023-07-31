@@ -76,18 +76,18 @@ export const UserSchema = new Schema<User>(
       required: true,
       type: [
         {
+          name: {
+            required: true,
+            type: String
+          },
           id: {
             required: true,
             immutable: true,
             lowercase: true,
             type: String,
             default: function () {
-              return ((this as any).name as string).replace(/\s/gm, '-');
+              return ((this as any).name as string).toLowerCase().replace(/[\s\n\t\.]/gm, '-');
             }
-          },
-          name: {
-            required: true,
-            type: String
           },
           description: String,
           alertConfig: {
@@ -122,14 +122,16 @@ export const UserSchema = new Schema<User>(
         }
       ],
       default: [
-        { name: 'Urgent', description: 'Urgent, Immediate, Important, Crucial messages' },
-        { name: 'Danger', description: 'Dangerous events - earthquakes, fires, collapse, shooting' },
+        { id: 'urgent', name: 'Urgent', description: 'Urgent, Immediate, Important, Crucial messages' },
+        { id: 'danger', name: 'Danger', description: 'Dangerous events - earthquakes, fires, collapse, shooting' },
         {
+          id: 'small-talk',
           name: 'Small talk',
           description: 'Small talk and chit-chat between coworkers, family, sports, pets, music, birthdays, parties',
           alertConfig: [{ onceInType: OnceIn.Hours, onceInValue: 2 }]
         },
         {
+          id: 'updates',
           name: 'Updates',
           description: 'Updates on completed work, new issues, work assignments',
           alertConfig: [
@@ -146,7 +148,7 @@ export const UserSchema = new Schema<User>(
     activeChannels: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: Channel
+        ref: 'Channel'
       }
     ]
   },

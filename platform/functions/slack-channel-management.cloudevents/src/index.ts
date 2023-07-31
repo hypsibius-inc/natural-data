@@ -5,8 +5,8 @@ import {
   asyncTryCatch,
   getPublishFunction
 } from '@hypsibius/knative-faas-utils';
-import { ErrorEvent, HypsibiusEvent, HypsibiusSlackEvent } from '@hypsibius/message-types';
-import { Channel } from '@hypsibius/message-types/mongo';
+import { ErrorEvent, HypsibiusEvent, HypsibiusSlackBlockAction, HypsibiusSlackEvent } from '@hypsibius/message-types';
+import { Channel, User } from '@hypsibius/message-types/mongo';
 import { ConversationsMembersResponse, WebClient } from '@slack/web-api';
 import { CloudEvent } from 'cloudevents';
 import { Context, Logger, StructuredReturn } from 'faas-js-runtime';
@@ -41,6 +41,7 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
       | HypsibiusSlackEvent<'member_left_channel'>
       | HypsibiusSlackEvent<'channel_left'>
       | HypsibiusSlackEvent<'group_left'>
+      | HypsibiusSlackBlockAction<'multi_static_select'>
     >
   ): Promise<StructuredReturn | CloudEvent<ErrorEvent>> => {
     return await asyncTryCatch(async () => {
@@ -213,6 +214,27 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
               });
             }
           }
+          break;
+        case 'multi_static_select':
+          const channels = await Channel.find({
+            teamId: cloudevent.data.context.teamId,
+            id: {$in: cloudevent.data.payload.selected_options.map(({value}) => value)},
+          }, {
+            _id: true
+          }).lean();
+          await User.findOneAndUpdate({
+            ids: {
+              $elemMatch: {
+                teamOrgId: cloudevent.data.context.teamId,
+                userId: cloudevent.data.context.userId
+              }
+            }
+          },
+          {
+            $set: {
+              activeChannels: channels.map((v) => v._id)
+            }
+          })
           break;
       }
       return {
