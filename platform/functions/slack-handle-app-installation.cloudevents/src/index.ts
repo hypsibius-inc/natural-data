@@ -42,16 +42,16 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
         }
       }
       return await asyncTryCatch<DefinedCloudEvent<ErrorEvent> | undefined>(async () => {
-        const profile = await api.users.profile.get({
+        const profile = await api.users.info({
           user: cloudevent.data.payload.user.id
         });
-        if (profile.ok && profile.profile) {
+        if (profile.ok && profile.user && profile.user.profile && profile.user.profile.email) {
           await publish({
             data: {
               type: 'hypsibius.slack.user_installed_app',
               installation: cloudevent.data.payload,
               installationId: cloudevent.data.id,
-              profile: profile.profile
+              user: profile.user
             }
           });
           return;

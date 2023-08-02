@@ -16,12 +16,16 @@
   "types": "build/index.d.ts",
   "exports": {
     ".": "./build/index.js",
-    "./mongo": "./build/mongo/index.js"
+    "./mongo": "./build/mongo/index.js",
+    "./utils": "./build/utils/index.js"
   },
   "typesVersions": {
     "*": {
       "mongo": [
         "build/mongo/index.d.ts"
+      ],
+      "utils": [
+        "build/utils/index.d.ts"
       ]
     }
   },

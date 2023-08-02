@@ -44,12 +44,13 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
       const defaults = new User();
       const user = await User.findOneAndUpdate(
         {
-          email: cloudevent.data.profile.email!
+          email: cloudevent.data.user.profile!.email!
         },
         [
           {
             $set: {
-              email: cloudevent.data.profile.email!,
+              info: cloudevent.data.user,
+              email: cloudevent.data.user.profile!.email!,
               ids: {
                 $ifNull: [
                   {

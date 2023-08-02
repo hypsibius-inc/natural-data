@@ -8,7 +8,9 @@ import {
   SlackEvent
 } from '@slack/bolt';
 import { ChatPostMessageArguments, ChatPostMessageResponse, WebClientOptions } from '@slack/web-api';
-import { Profile } from '@slack/web-api/dist/response/UsersProfileGetResponse';
+import { User as SlackUser } from '@slack/web-api/dist/response/UsersInfoResponse';
+import { User } from './mongo';
+import { ArrayElement } from './utils';
 
 export interface BaseHypsibiusEvent<T extends string = string> {
   type: T;
@@ -53,6 +55,25 @@ export interface SlackSendMessage extends WebClientEvent<'hypsibius.slack.send_m
 export interface SlackSendMessageResponse extends WebClientEvent<'hypsibius.slack.send_message_response'> {
   res: ChatPostMessageResponse;
 }
+export interface UserBaseRequest<T extends string> {
+  userId: string;
+  teamOrgId: string;
+  type: T;
+}
+export interface UserGetRequest extends UserBaseRequest<'get'> {
+  projection?: Record<string | keyof User, string | boolean | number>;
+  population?: (string | keyof User)[];
+}
+export type UserUpdateLabelsRequest = UserBaseRequest<'update'> & {
+  labels: (Partial<Omit<ArrayElement<NonNullable<User['labels']>>, 'alertConfig' | 'id'>> & {
+    id: string;
+    alertConfig?: (Partial<ArrayElement<ArrayElement<NonNullable<User['labels']>>['alertConfig']>> & {
+      index: number;
+    })[];
+    deleteAlerts?: number[];
+  })[];
+};
+export type UserRequest = UserGetRequest | UserUpdateLabelsRequest;
 export type InstallationRequest = {
   id: string;
 } & (
@@ -69,7 +90,7 @@ export interface SlackAppInstallationSuccess extends BaseHypsibiusEvent<'hypsibi
   payload: Installation;
 }
 export interface SlackUserInstalledApp extends BaseHypsibiusEvent<'hypsibius.slack.user_installed_app'> {
-  profile: Profile;
+  user: SlackUser;
   installationId: string;
   installation: Installation;
 }

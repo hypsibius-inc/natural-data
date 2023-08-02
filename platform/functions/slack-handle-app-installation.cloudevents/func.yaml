@@ -3,7 +3,7 @@ name: slack-handle-app-installation
 runtime: typescript
 registry: localhost:5000/
 image: localhost:5000/slack-handle-app-installation:latest
-imageDigest: sha256:0bdf4ab249ca7c7aa742960fe56e38453962d30a1f88f6df981df8c25378dee7
+imageDigest: sha256:5e8c4b94e80e29c18aea1aaa9ca29141bbb01c80c9b8962738f0ae81c4852d02
 created: 2023-07-19T10:08:31.488671707-06:00
 invoke: cloudevent
 build:

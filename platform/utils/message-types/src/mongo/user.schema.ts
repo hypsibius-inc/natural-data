@@ -1,8 +1,10 @@
+import { User as SlackUser } from '@slack/web-api/dist/response/UsersInfoResponse';
 import mongoose, { Model, ObjectId, Schema, model } from 'mongoose';
+import { ArrayElement } from '../utils';
 import { Channel } from './channel.schema';
 import { InstallationHistory } from './installation-history.schema';
 
-enum OnceIn {
+export enum OnceIn {
   // Never waits, sends immediately
   Immediate = 'IMMEDIATE',
   // Rounds up to the nearest second
@@ -17,8 +19,18 @@ enum OnceIn {
   Months = 'MONTHS'
 }
 
+export const fillDefaultAlert = (
+  a: Partial<ArrayElement<NonNullable<ArrayElement<NonNullable<User['labels']>>['alertConfig']>>>
+): ArrayElement<ArrayElement<NonNullable<User['labels']>>['alertConfig']> => ({
+  onceInType: a.onceInType ?? OnceIn.Immediate,
+  onceInValue: a.onceInValue ?? 1,
+  summarizeAbove: a.summarizeAbove ?? -1,
+  startOn: a.startOn ?? new Date()
+});
+
 export interface User {
   email: string;
+  info: SlackUser;
   ids: {
     installation: ObjectId | InstallationHistory;
     teamOrgId: string;
@@ -30,9 +42,9 @@ export interface User {
     name: string;
     description?: string;
     alertConfig: {
-      summarizeAbove: Number;
+      summarizeAbove: number;
       onceInType: OnceIn;
-      onceInValue: Number;
+      onceInValue: number;
       startOn: Date;
     }[];
   }[];
@@ -46,6 +58,7 @@ export const UserSchema = new Schema<User>(
       type: String,
       match: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
     },
+    info: Object,
     ids: {
       required: true,
       type: [
@@ -76,6 +89,7 @@ export const UserSchema = new Schema<User>(
       required: true,
       type: [
         {
+          _id: false,
           name: {
             required: true,
             type: String
@@ -94,6 +108,7 @@ export const UserSchema = new Schema<User>(
             required: true,
             type: [
               {
+                _id: false,
                 summarizeAbove: {
                   required: true,
                   type: Number,

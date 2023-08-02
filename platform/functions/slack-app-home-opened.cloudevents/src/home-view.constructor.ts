@@ -1,18 +1,20 @@
 import { Channel, User } from '@hypsibius/message-types/mongo';
-import { Block, HomeView, PlainTextOption } from '@slack/web-api';
+import { formatLabelAlert } from '@hypsibius/message-types/utils';
+import { Button, HomeView, KnownBlock, PlainTextOption } from '@slack/web-api';
 
-const constructLabels = (labels: User['labels']): Block[] => {
+const constructLabels = (labels: User['labels']): KnownBlock[] => {
   if (!labels) {
     return [];
   }
   return labels.flatMap((l) => [
     {
+      type: 'divider'
+    },
+    {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `*$${l.name}*\n${l.alertConfig
-          .map((ac) => `Every ${ac.onceInValue} ${ac.onceInType.toLowerCase()}, from ${ac.startOn.toLocaleString()}`)
-          .join('\n')}`
+        text: `*$${l.name}*\n- ${l.alertConfig.map((ac) => formatLabelAlert(ac)).join('\n- ')}`
       },
       accessory: {
         type: 'button',
@@ -24,9 +26,6 @@ const constructLabels = (labels: User['labels']): Block[] => {
         action_id: `label.edit.${l.id}`,
         value: `label.edit.${l.id}`
       }
-    },
-    {
-      type: 'divider'
     }
   ]);
 };
@@ -51,6 +50,20 @@ export const constructHomeView = (user: User, channels: Channel[]): HomeView => 
   const selectedOptionsIds = getChannelIds((user.activeChannels || []) as Channel[]);
   const selectedOptions = options.filter((v) => selectedOptionsIds.includes(v.value || ''));
   const labels = constructLabels(user.labels);
+  const deleteLabelsButton: Button[] = user.labels
+    ? [
+        {
+          type: 'button',
+          action_id: 'labels.delete',
+          style: 'danger',
+          text: {
+            type: 'plain_text',
+            text: 'Delete Labels',
+            emoji: true
+          }
+        }
+      ]
+    : [];
   return {
     type: 'home',
     blocks: [
@@ -60,39 +73,6 @@ export const constructHomeView = (user: User, channels: Channel[]): HomeView => 
           type: 'plain_text',
           text: 'Welcome to Dini!'
         }
-      },
-      {
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              text: 'Add Channel',
-              emoji: true
-            },
-            style: 'primary',
-            value: 'add_channel'
-          },
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              text: 'New Label',
-              emoji: true
-            },
-            value: 'new_label'
-          },
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              text: 'Help',
-              emoji: true
-            },
-            value: 'help'
-          }
-        ]
       },
       {
         type: 'context',
@@ -137,30 +117,29 @@ export const constructHomeView = (user: User, channels: Channel[]): HomeView => 
         ]
       },
       {
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            action_id: 'label.edit.$',
+            style: 'primary',
+            text: {
+              type: 'plain_text',
+              text: 'New Label',
+              emoji: true
+            }
+          },
+          ...deleteLabelsButton
+        ]
+      },
+      {
         type: 'section',
         text: {
           type: 'mrkdwn',
           text: '*Your Labels*'
         }
       },
-      {
-        type: 'divider'
-      },
-      ...labels,
-      {
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              text: 'New Label',
-              emoji: true
-            },
-            value: 'label.new'
-          }
-        ]
-      }
+      ...labels
     ]
   };
 };
