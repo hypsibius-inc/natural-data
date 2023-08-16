@@ -21,7 +21,7 @@ export enum OnceIn {
 
 export const fillDefaultAlert = (
   a: Partial<ArrayElement<NonNullable<ArrayElement<NonNullable<User['labels']>>['alertConfig']>>>
-): ArrayElement<ArrayElement<NonNullable<User['labels']>>['alertConfig']> => ({
+): ArrayElement<NonNullable<ArrayElement<NonNullable<User['labels']>>['alertConfig']>> => ({
   onceInType: a.onceInType ?? OnceIn.Immediate,
   onceInValue: a.onceInValue ?? 1,
   summarizeAbove: a.summarizeAbove ?? -1,
@@ -41,7 +41,7 @@ export interface User {
     id: string;
     name: string;
     description?: string;
-    alertConfig: {
+    alertConfig?: {
       summarizeAbove: number;
       onceInType: OnceIn;
       onceInValue: number;
@@ -96,7 +96,6 @@ export const UserSchema = new Schema<User>(
           },
           id: {
             required: true,
-            immutable: true,
             lowercase: true,
             type: String,
             default: function () {
@@ -105,7 +104,6 @@ export const UserSchema = new Schema<User>(
           },
           description: String,
           alertConfig: {
-            required: true,
             type: [
               {
                 _id: false,

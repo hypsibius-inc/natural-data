@@ -46,7 +46,7 @@ export default class FaaSJSReceiver implements Receiver {
     publish,
     installerOptions = undefined,
     scopes = undefined,
-    customPropertiesExtractor = (_) => ({})
+    customPropertiesExtractor = () => ({})
   }: FaaSJSReceiverOptions) {
     // Initialize instance variables, substituting defaults for each value
     this.signingSecret = signingSecret;
@@ -69,7 +69,7 @@ export default class FaaSJSReceiver implements Receiver {
     this.app = app;
   };
 
-  public start = (..._args: any[]): Promise<Handler> => {
+  public start = (): Promise<Handler> => {
     return new Promise((resolve, reject) => {
       try {
         const handler = this.toHandler();
@@ -80,9 +80,15 @@ export default class FaaSJSReceiver implements Receiver {
     });
   };
 
+  public async handle(...args: Parameters<Handler>): ReturnType<Handler> {
+    return await (
+      await this.start()
+    )(...args);
+  }
+
   // eslint-disable-next-line class-methods-use-this
-  public stop = (..._args: any[]): Promise<void> => {
-    return new Promise((resolve, _reject) => {
+  public stop = (): Promise<void> => {
+    return new Promise((resolve) => {
       resolve();
     });
   };
@@ -92,7 +98,7 @@ export default class FaaSJSReceiver implements Receiver {
     context: Context,
     body?: string | StringIndexed
   ): Promise<StructuredReturn> => {
-    const url = new URL(`https://${context.headers.host!}`);
+    const url = new URL(`https://${context.headers.host}`);
     for (const [k, v] of Object.entries(context.query || {})) {
       url.searchParams.append(k, v);
     }
@@ -116,7 +122,7 @@ export default class FaaSJSReceiver implements Receiver {
             }
             return [k, v];
           })
-          .filter(([_, v]) => v) as [string, string][]
+          .filter(([, v]) => v) as [string, string][]
       ),
       body: res._getData()
     };
@@ -126,7 +132,7 @@ export default class FaaSJSReceiver implements Receiver {
     return async (context: Context, body?: string | StringIndexed): Promise<StructuredReturn> => {
       try {
         body = objectify(body);
-        if (body && typeof body === "object" && Object.keys(body).length === 1 && "payload" in body) {
+        if (body && typeof body === 'object' && Object.keys(body).length === 1 && 'payload' in body) {
           body = body.payload;
         }
       } catch (e) {
@@ -146,15 +152,16 @@ export default class FaaSJSReceiver implements Receiver {
       }
 
       // Empty get request (install)
+      const scopes = this.scopes;
       if (
         (!body || Object.keys(body).length === 0 || body.length === 0) &&
         (!context.query || Object.keys(context.query).length === 0) &&
         this.installer !== undefined &&
-        this.scopes !== undefined
+        scopes
       ) {
         return await this.callWithReqRes(
           async (req, res) => {
-            await this.installer!.handleInstallPath(req, res, undefined, { scopes: this.scopes! });
+            await this.installer?.handleInstallPath(req, res, undefined, { scopes });
           },
           context,
           body
@@ -164,13 +171,15 @@ export default class FaaSJSReceiver implements Receiver {
       if (context.query && context.query.code && context.query.state && this.installer && this.scopes) {
         return await this.callWithReqRes(
           async (req, res) => {
-            await this.installer!.handleCallback(
+            await this.installer?.handleCallback(
               req,
               res,
               {
                 success: async (installation, ...args) => {
-                  success(installation, ...args);
-                  const id = installation.isEnterpriseInstall ? installation.enterprise!.id : installation.team!.id;
+                  const id = installation.isEnterpriseInstall ? installation.enterprise?.id : installation.team?.id;
+                  if (!id) {
+                    throw Error(`No id provided`);
+                  }
                   await this.publish({
                     data: {
                       type: 'hypsibius.slack.app_installation_success',
@@ -178,8 +187,10 @@ export default class FaaSJSReceiver implements Receiver {
                       payload: installation
                     }
                   });
+                  success(installation, ...args);
                 }
               },
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               { scopes: this.scopes! }
             );
           },
@@ -234,10 +245,13 @@ export default class FaaSJSReceiver implements Receiver {
         });
       }
 
+      if (!body) {
+        throw Error(`No body`);
+      }
       // Structure the ReceiverEvent
-      let storedResponse;
+      let storedResponse: unknown;
       const event: ReceiverEvent = {
-        body: body!,
+        body,
         ack: async (response) => {
           if (isAcknowledged) {
             throw new ReceiverMultipleAckError();

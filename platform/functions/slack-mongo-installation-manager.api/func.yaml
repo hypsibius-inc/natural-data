@@ -3,7 +3,7 @@ name: slack-mongo-installation-manager
 runtime: typescript
 registry: localhost:5000/
 image: localhost:5000/slack-mongo-installation-manager:latest
-imageDigest: sha256:a3eef54704896c8e3a2694246216ae857aac68d75dafd148253d0d03252af063
+imageDigest: sha256:3c8466624b327399cfd802b5db2611af60f5cee7ff0afa30f77ade83809885a4
 created: 2023-07-13T20:17:44.531303169-06:00
 build:
   builder: pack

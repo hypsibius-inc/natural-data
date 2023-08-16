@@ -1,15 +1,7 @@
-import {
-  BasicElementAction,
-  BlockAction,
-  BlockElementAction,
-  Context,
-  EventFromType,
-  Installation,
-  SlackEvent
-} from '@slack/bolt';
+import { Installation, BasicElementAction, BlockAction, BlockElementAction, Context, EventFromType, SlackEvent } from '@slack/bolt';
 import { ChatPostMessageArguments, ChatPostMessageResponse, WebClientOptions } from '@slack/web-api';
 import { User as SlackUser } from '@slack/web-api/dist/response/UsersInfoResponse';
-import { User } from './mongo';
+import { Channel, User } from './mongo';
 import { ArrayElement } from './utils';
 
 export interface BaseHypsibiusEvent<T extends string = string> {
@@ -55,25 +47,41 @@ export interface SlackSendMessage extends WebClientEvent<'hypsibius.slack.send_m
 export interface SlackSendMessageResponse extends WebClientEvent<'hypsibius.slack.send_message_response'> {
   res: ChatPostMessageResponse;
 }
-export interface UserBaseRequest<T extends string> {
+export interface MongoBaseRequest<S extends string, T extends string> {
+  schema: S;
+  type: T;
+}
+export interface UserBaseRequest<T extends string> extends MongoBaseRequest<'User', T> {
   userId: string;
   teamOrgId: string;
-  type: T;
+}
+export interface ChannelBaseRequest<T extends string> extends MongoBaseRequest<'Channel', T> {
+  teamId: string;
+  activeBot?: boolean;
+  archived?: boolean;
+  users?: string | string[];
+}
+export interface ChannelGetRequest extends ChannelBaseRequest<'get'> {
+  projection?: Record<string | keyof Channel, string | boolean | number>;
+  population?: (string | keyof Channel)[];
 }
 export interface UserGetRequest extends UserBaseRequest<'get'> {
   projection?: Record<string | keyof User, string | boolean | number>;
   population?: (string | keyof User)[];
 }
 export type UserUpdateLabelsRequest = UserBaseRequest<'update'> & {
-  labels: (Partial<Omit<ArrayElement<NonNullable<User['labels']>>, 'alertConfig' | 'id'>> & {
+  labels?: (Partial<Omit<ArrayElement<NonNullable<User['labels']>>, 'alertConfig' | 'id'>> & {
     id: string;
-    alertConfig?: (Partial<ArrayElement<ArrayElement<NonNullable<User['labels']>>['alertConfig']>> & {
+    alertConfig?: (Partial<ArrayElement<NonNullable<ArrayElement<NonNullable<User['labels']>>['alertConfig']>>> & {
       index: number;
     })[];
     deleteAlerts?: number[];
   })[];
+  deleteLabelsById?: string[];
 };
 export type UserRequest = UserGetRequest | UserUpdateLabelsRequest;
+export type ChannelRequest = ChannelGetRequest;
+export type MongoRequest = UserRequest | ChannelRequest;
 export type InstallationRequest = {
   id: string;
 } & (

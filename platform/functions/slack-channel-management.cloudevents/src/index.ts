@@ -5,6 +5,7 @@ import {
   asyncTryCatch,
   getPublishFunction
 } from '@hypsibius/knative-faas-utils';
+import { getEnvVarOrThrow } from '@hypsibius/knative-faas-utils/utils';
 import { ErrorEvent, HypsibiusEvent, HypsibiusSlackBlockAction, HypsibiusSlackEvent } from '@hypsibius/message-types';
 import { Channel, User } from '@hypsibius/message-types/mongo';
 import { ConversationsMembersResponse, WebClient } from '@slack/web-api';
@@ -22,12 +23,9 @@ function initialize(log: Logger): SlackLogger {
   return logger;
 }
 
-const MONGODB_CONNECTION: string = process.env.MONGODB_CONNECTION!;
-if (!MONGODB_CONNECTION) {
-  throw Error('Env var MONGODB_CONNECTION not set');
-}
+const MONGODB_CONNECTION = getEnvVarOrThrow('MONGODB_CONNECTION');
 
-const init = () => {
+const init = (): void => {
   mongoose.connect(MONGODB_CONNECTION, {
     dbName: 'slack-conf'
   });
@@ -44,9 +42,9 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
       | HypsibiusSlackBlockAction<'multi_static_select'>
     >
   ): Promise<StructuredReturn | CloudEvent<ErrorEvent>> => {
-    return await asyncTryCatch(async () => {
+    return await asyncTryCatch(async (): Promise<StructuredReturn> => {
       switch (cloudevent.data.payload.type) {
-        case 'member_joined_channel':
+        case 'member_joined_channel': {
           const prev = await Channel.findOneAndUpdate(
             {
               teamId: cloudevent.data.payload.team,
@@ -117,7 +115,8 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
             });
           }
           break;
-        case 'member_left_channel':
+        }
+        case 'member_left_channel': {
           const prevLeft = await Channel.findOneAndUpdate(
             {
               teamId: cloudevent.data.payload.team,
@@ -143,6 +142,7 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
             });
           }
           break;
+        }
         case 'channel_left':
           if (!cloudevent.data.context.teamId || !cloudevent.data.context.botUserId) {
             await publish({
@@ -215,28 +215,35 @@ const handle = assertNotEmptyCloudEventWithErrorLogging(
             }
           }
           break;
-        case 'multi_static_select':
-          const channels = await Channel.find({
-            teamId: cloudevent.data.context.teamId,
-            id: {$in: cloudevent.data.payload.selected_options.map(({value}) => value)},
-          }, {
-            _id: true
-          }).lean();
-          await User.findOneAndUpdate({
-            ids: {
-              $elemMatch: {
-                teamOrgId: cloudevent.data.context.teamId,
-                userId: cloudevent.data.context.userId
+        case 'multi_static_select': {
+          const channels = await Channel.find(
+            {
+              teamId: cloudevent.data.context.teamId,
+              id: { $in: cloudevent.data.payload.selected_options.map(({ value }) => value) }
+            },
+            {
+              _id: true
+            }
+          ).lean();
+          await User.findOneAndUpdate(
+            {
+              ids: {
+                $elemMatch: {
+                  teamOrgId: cloudevent.data.context.teamId,
+                  userId: cloudevent.data.context.userId
+                }
+              }
+            },
+            {
+              $set: {
+                activeChannels: channels.map((v) => v._id)
               }
             }
-          },
-          {
-            $set: {
-              activeChannels: channels.map((v) => v._id)
-            }
-          })
+          );
           break;
+        }
       }
+
       return {
         statusCode: 200
       };

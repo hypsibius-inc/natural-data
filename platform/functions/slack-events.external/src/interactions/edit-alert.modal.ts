@@ -33,12 +33,17 @@ const defaultViewValues: ModalView = {
 export const getAlertEditModal = (
   labelId: string,
   alertIndex: number,
-  alertConfig?: Partial<ArrayElement<ArrayElement<NonNullable<User['labels']>>['alertConfig']>>
+  extra: {
+    alertConfig?: Partial<ArrayElement<NonNullable<ArrayElement<NonNullable<User['labels']>>['alertConfig']>>>;
+    metadata?: string;
+  }
 ): ModalView => {
+  const { alertConfig, metadata } = extra;
   const startOn = typeof alertConfig?.startOn === 'string' ? new Date(alertConfig.startOn) : alertConfig?.startOn;
   const ac = fillDefaultAlert({ ...alertConfig, startOn });
   return {
     ...defaultViewValues,
+    private_metadata: metadata,
     callback_id: `label.${labelId}.edit.alert.config.${alertIndex}`,
     blocks: [
       {
@@ -54,7 +59,7 @@ export const getAlertEditModal = (
           initial_value: `${ac.onceInValue}`,
           min_value: '0',
           max_value: '1000',
-          action_id: `label.${labelId}.edit.alert.${alertIndex}.frequency.value`
+          action_id: `onceInValue`
         }
       },
       {
@@ -65,7 +70,7 @@ export const getAlertEditModal = (
           emoji: true
         },
         element: {
-          action_id: `label.${labelId}.edit.alert.${alertIndex}.frequency.type`,
+          action_id: `onceInType`,
           type: 'static_select',
           options: options,
           initial_option: options.filter((v) => v.value === ac.onceInType)[0]
@@ -79,7 +84,7 @@ export const getAlertEditModal = (
         },
         element: {
           type: 'datetimepicker',
-          action_id: `label.${labelId}.edit.alert.${alertIndex}.startOn`,
+          action_id: `startOn`,
           initial_date_time: Math.floor(ac.startOn.getTime() / 1000)
         }
       },
@@ -94,7 +99,7 @@ export const getAlertEditModal = (
           initial_value: `${ac.summarizeAbove}`,
           min_value: '-1',
           max_value: '100',
-          action_id: `label.${labelId}.edit.alert.${alertIndex}.summarizeAbove`
+          action_id: `summarizeAbove`
         },
         label: {
           type: 'plain_text',

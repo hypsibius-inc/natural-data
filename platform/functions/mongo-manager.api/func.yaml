@@ -1,11 +1,10 @@
 specVersion: 0.35.0
-name: slack-app-home-opened
+name: mongo-manager
 runtime: typescript
 registry: localhost:5000/
-image: localhost:5000/slack-app-home-opened:latest
-imageDigest: sha256:e0f311d40d29e97f3b275c064e2f4d211d300821c9d0eca5c0b1d0a3ab2f77ad
-created: 2023-07-11T13:49:03.172787958-06:00
-invoke: cloudevent
+image: localhost:5000/mongo-manager:latest
+imageDigest: sha256:61a5d6b80efda3d28287da4a85f46dc88417abcccabff5a1bfe387986a35b49d
+created: 2023-07-13T20:17:44.531303169-06:00
 build:
   builder: pack
   buildEnvs:
@@ -19,3 +18,6 @@ run:
       }}'
 deploy:
   namespace: mongodb
+  options:
+    scale:
+      min: 1

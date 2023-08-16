@@ -2,7 +2,7 @@ import { type User } from '@hypsibius/message-types/mongo';
 import { ArrayElement, formatLabelAlert } from '@hypsibius/message-types/utils';
 import { Button, ModalView } from '@slack/bolt';
 
-export const getLabelEditModal = (userId: string, label?: ArrayElement<NonNullable<User['labels']>>): ModalView => {
+export const getLabelEditModal = (label?: ArrayElement<NonNullable<User['labels']>>): ModalView => {
   const labelId = label?.id ?? '$';
   const deleteAlertsButton: Button[] = label?.alertConfig
     ? [
@@ -20,7 +20,6 @@ export const getLabelEditModal = (userId: string, label?: ArrayElement<NonNullab
     : [];
   return {
     type: 'modal',
-    external_id: `${userId}/${labelId}`,
     callback_id: `label.edit.${labelId}`,
     submit: {
       type: 'plain_text',
@@ -42,8 +41,13 @@ export const getLabelEditModal = (userId: string, label?: ArrayElement<NonNullab
         type: 'input',
         element: {
           type: 'plain_text_input',
-          action_id: `label.${labelId}.edit.name`,
-          initial_value: label?.name ?? 'New Label'
+          action_id: `name`,
+          placeholder: {
+            type: 'plain_text',
+            text: 'New Label',
+            emoji: true
+          },
+          initial_value: label?.name === '$' ? undefined : label?.name
         },
         label: {
           type: 'plain_text',
@@ -57,13 +61,13 @@ export const getLabelEditModal = (userId: string, label?: ArrayElement<NonNullab
         element: {
           type: 'plain_text_input',
           multiline: true,
-          action_id: `label.${labelId}.edit.description`,
+          action_id: `description`,
           placeholder: {
             type: 'plain_text',
             text: 'Write a detailed description to help the AI understand more accurately the purpose of the label',
             emoji: true
           },
-          initial_value: label?.description || ''
+          initial_value: label?.description === '$' ? undefined : label?.description
         },
         label: {
           type: 'plain_text',
@@ -106,7 +110,7 @@ export const getLabelEditModal = (userId: string, label?: ArrayElement<NonNullab
         },
         accessory: {
           type: 'button',
-          action_id: `label.${labelId}.alerts.edit.${index}`,
+          action_id: `label.${labelId}.alerts.edit.${'index' in ac ? ac.index : index}`,
           text: {
             type: 'plain_text',
             text: 'Edit',

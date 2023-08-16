@@ -1,6 +1,10 @@
 import { ModalView } from '@slack/bolt';
 
-export const getDeleteModal = (deleteType: string, callbackId: string, values: { name: string; id: string }[]): ModalView => ({
+export const getDeleteModal = (
+  deleteType: string,
+  callbackId: string,
+  values: { name: string; id: string }[]
+): ModalView => ({
   type: 'modal',
   callback_id: callbackId,
   submit: {
@@ -27,7 +31,7 @@ export const getDeleteModal = (deleteType: string, callbackId: string, values: {
         text: `Select which ${deleteType} you want to delete:`
       },
       element: {
-        action_id: 'delete.selected',
+        action_id: 'selected',
         type: 'multi_static_select',
         options: values.map((l) => ({
           text: {
@@ -39,7 +43,7 @@ export const getDeleteModal = (deleteType: string, callbackId: string, values: {
         })),
         placeholder: {
           type: 'plain_text',
-          text: 'Select labels to delete'
+          text: `Select ${deleteType} to delete`
         }
       }
     }

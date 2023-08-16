@@ -1,8 +1,5 @@
 import { OnceIn, User } from '../mongo';
-
-export type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType extends readonly (infer ElementType)[]
-  ? ElementType
-  : never;
+import { ArrayElement } from './typing';
 
 const weekDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const reverseDayOfMonthSuffix = {
@@ -18,12 +15,12 @@ const dayOfMonthSuffix = Object.fromEntries(
 );
 
 export const formatLabelAlert = (
-  alertConfig: ArrayElement<ArrayElement<NonNullable<User['labels']>>['alertConfig']>
+  alertConfig: ArrayElement<NonNullable<ArrayElement<NonNullable<User['labels']>>['alertConfig']>>
 ): string => {
-  const startOn = typeof alertConfig.startOn === "string" ? new Date(alertConfig.startOn) : alertConfig.startOn;
+  const startOn = typeof alertConfig.startOn === 'string' ? new Date(alertConfig.startOn) : alertConfig.startOn;
   const s = alertConfig.onceInValue !== 1 ? 's' : '';
   const v = s ? `${alertConfig.onceInValue} ` : ''; // With space if needed
-  const secs = `${startOn.getSeconds()}`.padStart(2, '0');
+  const secs = `${`${startOn.getSeconds()}`.padStart(2, '0')}UTC`;
   const mins = `${startOn.getMinutes()}`.padStart(2, '0');
   const hrs = `${startOn.getHours()}`.padStart(2, '0');
   const time = `${hrs}:${mins}:${secs}`;

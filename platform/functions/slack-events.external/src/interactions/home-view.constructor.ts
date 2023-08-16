@@ -2,6 +2,8 @@ import { Channel, User } from '@hypsibius/message-types/mongo';
 import { formatLabelAlert } from '@hypsibius/message-types/utils';
 import { Button, HomeView, KnownBlock, PlainTextOption } from '@slack/web-api';
 
+const getLabelName = (name: string) => (name === '$' ? '<Editing>' : `$${name}`);
+
 const constructLabels = (labels: User['labels']): KnownBlock[] => {
   if (!labels) {
     return [];
@@ -14,7 +16,7 @@ const constructLabels = (labels: User['labels']): KnownBlock[] => {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `*$${l.name}*\n- ${l.alertConfig.map((ac) => formatLabelAlert(ac)).join('\n- ')}`
+        text: `*${getLabelName(l.name)}*\n- ${l.alertConfig?.map((ac) => formatLabelAlert(ac)).join('\n- ')}`
       },
       accessory: {
         type: 'button',
@@ -43,7 +45,8 @@ const constructChannelOptions = (channels: Channel[]): PlainTextOption[] =>
 const getChannelIds = (channels: Channel[]): string[] => channels.map((c) => c.id);
 
 export const constructHomeView = (user: User, channels: Channel[]): HomeView => {
-  if (user.activeChannels && user.activeChannels.at(0) && !('id' in user.activeChannels.at(0)!)) {
+  const firstActiveChannel = user.activeChannels.at(0);
+  if (user.activeChannels && firstActiveChannel && !('id' in firstActiveChannel)) {
     throw Error(`User's "activeChannels" field must be populated`);
   }
   const options = constructChannelOptions(channels);
