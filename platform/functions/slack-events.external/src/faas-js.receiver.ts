@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PublishFunction } from '@hypsibius/knative-faas-utils/build/publish';
-import { SlackAppInstallationSuccess } from '@hypsibius/message-types';
+import { HypsibiusEvent } from '@hypsibius/message-types';
 import { App, Receiver, ReceiverEvent, ReceiverMultipleAckError } from '@slack/bolt';
 import { StringIndexed } from '@slack/bolt/dist/types/helpers';
 import { LogLevel, Logger } from '@slack/logger';
@@ -11,11 +11,12 @@ import { IncomingMessage, ServerResponse } from 'http';
 import httpMocks from 'node-mocks-http';
 import tsscmp from 'tsscmp';
 import { success } from './install-success';
+import { objectify } from './utils/objectify';
 
-export interface FaaSJSReceiverOptions<T> {
+export interface FaaSJSReceiverOptions {
   signingSecret: string;
   logger: Logger;
-  publish: PublishFunction<T>;
+  publish: PublishFunction<HypsibiusEvent>;
   installerOptions?: InstallProviderOptions;
   scopes?: string;
   logLevel?: LogLevel;
@@ -24,15 +25,7 @@ export interface FaaSJSReceiverOptions<T> {
 
 export type Handler = (context: Context, body?: string | StringIndexed) => Promise<StructuredReturn>;
 
-/*
- * Receiver implementation for FaaS JS runtime
- *
- * Note that this receiver does not support Slack OAuth flow.
- * For OAuth flow endpoints, deploy another Lambda function built with ExpressReceiver.
- */
-export default class FaaSJSReceiver<T extends { slack_app_installation_success: SlackAppInstallationSuccess }>
-  implements Receiver
-{
+export default class FaaSJSReceiver implements Receiver {
   private signingSecret: string;
 
   private app?: App;
@@ -45,7 +38,7 @@ export default class FaaSJSReceiver<T extends { slack_app_installation_success: 
 
   private customPropertiesExtractor: (context: Context) => StringIndexed;
 
-  private publish: PublishFunction<T>;
+  private publish: PublishFunction<HypsibiusEvent>;
 
   public constructor({
     signingSecret,
@@ -53,8 +46,8 @@ export default class FaaSJSReceiver<T extends { slack_app_installation_success: 
     publish,
     installerOptions = undefined,
     scopes = undefined,
-    customPropertiesExtractor = (_) => ({})
-  }: FaaSJSReceiverOptions<T>) {
+    customPropertiesExtractor = () => ({})
+  }: FaaSJSReceiverOptions) {
     // Initialize instance variables, substituting defaults for each value
     this.signingSecret = signingSecret;
     this.logger = logger;
@@ -76,7 +69,7 @@ export default class FaaSJSReceiver<T extends { slack_app_installation_success: 
     this.app = app;
   };
 
-  public start = (..._args: any[]): Promise<Handler> => {
+  public start = (): Promise<Handler> => {
     return new Promise((resolve, reject) => {
       try {
         const handler = this.toHandler();
@@ -87,9 +80,15 @@ export default class FaaSJSReceiver<T extends { slack_app_installation_success: 
     });
   };
 
+  public async handle(...args: Parameters<Handler>): ReturnType<Handler> {
+    return await (
+      await this.start()
+    )(...args);
+  }
+
   // eslint-disable-next-line class-methods-use-this
-  public stop = (..._args: any[]): Promise<void> => {
-    return new Promise((resolve, _reject) => {
+  public stop = (): Promise<void> => {
+    return new Promise((resolve) => {
       resolve();
     });
   };
@@ -99,7 +98,7 @@ export default class FaaSJSReceiver<T extends { slack_app_installation_success: 
     context: Context,
     body?: string | StringIndexed
   ): Promise<StructuredReturn> => {
-    const url = new URL(`https://${context.headers.host!}`);
+    const url = new URL(`https://${context.headers.host}`);
     for (const [k, v] of Object.entries(context.query || {})) {
       url.searchParams.append(k, v);
     }
@@ -123,7 +122,7 @@ export default class FaaSJSReceiver<T extends { slack_app_installation_success: 
             }
             return [k, v];
           })
-          .filter(([_, v]) => v) as [string, string][]
+          .filter(([, v]) => v) as [string, string][]
       ),
       body: res._getData()
     };
@@ -131,7 +130,14 @@ export default class FaaSJSReceiver<T extends { slack_app_installation_success: 
 
   public toHandler = (): Handler => {
     return async (context: Context, body?: string | StringIndexed): Promise<StructuredReturn> => {
-      this.logger.debug(`FaaSJS Event: ${JSON.stringify(context, null, 2)}`);
+      try {
+        body = objectify(body);
+        if (body && typeof body === 'object' && Object.keys(body).length === 1 && 'payload' in body) {
+          body = body.payload;
+        }
+      } catch (e) {
+        this.logger.error(`${e} Failed ${typeof e} to Objectify ${JSON.stringify(e)}`);
+      }
       this.logger.debug(`FaaSJS Body: ${JSON.stringify(body)}`);
 
       // ssl_check (for Slash Commands)
@@ -146,15 +152,16 @@ export default class FaaSJSReceiver<T extends { slack_app_installation_success: 
       }
 
       // Empty get request (install)
+      const scopes = this.scopes;
       if (
         (!body || Object.keys(body).length === 0 || body.length === 0) &&
         (!context.query || Object.keys(context.query).length === 0) &&
         this.installer !== undefined &&
-        this.scopes !== undefined
+        scopes
       ) {
         return await this.callWithReqRes(
           async (req, res) => {
-            await this.installer!.handleInstallPath(req, res, undefined, { scopes: this.scopes! });
+            await this.installer?.handleInstallPath(req, res, undefined, { scopes });
           },
           context,
           body
@@ -164,22 +171,26 @@ export default class FaaSJSReceiver<T extends { slack_app_installation_success: 
       if (context.query && context.query.code && context.query.state && this.installer && this.scopes) {
         return await this.callWithReqRes(
           async (req, res) => {
-            await this.installer!.handleCallback(
+            await this.installer?.handleCallback(
               req,
               res,
               {
-                success: (installation, ...args) => {
-                  success(installation, ...args);
-                  const id = installation.isEnterpriseInstall ? installation.enterprise!.id : installation.team!.id;
-                  this.publish({
-                    type: 'slack_app_installation_success',
+                success: async (installation, ...args) => {
+                  const id = installation.isEnterpriseInstall ? installation.enterprise?.id : installation.team?.id;
+                  if (!id) {
+                    throw Error(`No id provided`);
+                  }
+                  await this.publish({
                     data: {
+                      type: 'hypsibius.slack.app_installation_success',
                       id: id,
                       payload: installation
                     }
                   });
+                  success(installation, ...args);
                 }
               },
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               { scopes: this.scopes! }
             );
           },
@@ -234,10 +245,13 @@ export default class FaaSJSReceiver<T extends { slack_app_installation_success: 
         });
       }
 
+      if (!body) {
+        throw Error(`No body`);
+      }
       // Structure the ReceiverEvent
-      let storedResponse;
+      let storedResponse: unknown;
       const event: ReceiverEvent = {
-        body: body!,
+        body,
         ack: async (response) => {
           if (isAcknowledged) {
             throw new ReceiverMultipleAckError();

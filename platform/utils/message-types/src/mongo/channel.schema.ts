@@ -1,12 +1,33 @@
-import { InferSchemaType, Schema, model } from 'mongoose';
+import { ConversationsInfoResponse } from '@slack/web-api';
+import { Model, ObjectId, Schema, model } from 'mongoose';
 import { User } from './user.schema';
 
-export const ChannelSchema = new Schema(
+export interface Channel {
+  _id: ObjectId;
+  id: string;
+  name: string;
+  info: Required<ConversationsInfoResponse>['channel'];
+  teamId: string;
+  activeBot: boolean;
+  archived: boolean;
+  users: string[];
+  installedUsers: User[] | null;
+}
+
+export const ChannelSchema = new Schema<Channel>(
   {
     id: {
       type: String,
       required: true,
       immutable: true
+    },
+    name: {
+      type: String,
+      required: true
+    },
+    info: {
+      type: Object,
+      required: true
     },
     activeBot: {
       type: Boolean,
@@ -22,10 +43,6 @@ export const ChannelSchema = new Schema(
       required: true,
       immutable: true
     },
-    name: {
-      type: String,
-      required: true
-    },
     users: {
       type: [String],
       required: true
@@ -37,22 +54,21 @@ export const ChannelSchema = new Schema(
       installedUsers: {
         options: {
           ref: User,
-          localField: "users",
-          foreignField: "ids.userId",
-          match: (channel) => ({ids: {
-            teamOrgId: channel.teamId,
-            userId: {
-              $in: channel.users
-            }
-          }})
+          localField: 'users',
+          foreignField: 'ids.userId',
+          match: (channel: Channel) => ({
+            ids: {
+              teamOrgId: channel.teamId,
+              userId: {
+                $in: channel.users
+              }
+            },
+            activeChannels: channel._id
+          })
         }
       }
     }
   }
 );
 
-export type Channel = InferSchemaType<typeof ChannelSchema> & {
-  installedUsers: User[] | null;
-};
-
-export const Channel = model('Channel', ChannelSchema);
+export const Channel: Model<Channel> = model<Channel>('Channel', ChannelSchema);

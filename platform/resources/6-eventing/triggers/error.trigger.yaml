@@ -1,0 +1,16 @@
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: error
+  namespace: eventing
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: hypsibius.error
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: error-handler
+      namespace: global-funcs

@@ -16,12 +16,16 @@
   "types": "build/index.d.ts",
   "exports": {
     ".": "./build/index.js",
-    "./mongo": "./build/mongo/index.js"
+    "./mongo": "./build/mongo/index.js",
+    "./utils": "./build/utils/index.js"
   },
   "typesVersions": {
     "*": {
       "mongo": [
         "build/mongo/index.d.ts"
+      ],
+      "utils": [
+        "build/utils/index.d.ts"
       ]
     }
   },
@@ -35,6 +39,8 @@
   },
   "dependencies": {
     "@slack/bolt": "^3.13.2",
-    "mongoose": "^7.3.4"
+    "@slack/oauth": "^2.6.1",
+    "@slack/web-api": "^6.9.0",
+    "mongoose": "^7.4.1"
   }
 }

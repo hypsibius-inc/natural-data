@@ -1,0 +1,23 @@
+specVersion: 0.35.0
+name: mongo-manager
+runtime: typescript
+registry: localhost:5000/
+image: localhost:5000/mongo-manager:latest
+imageDigest: sha256:61a5d6b80efda3d28287da4a85f46dc88417abcccabff5a1bfe387986a35b49d
+created: 2023-07-13T20:17:44.531303169-06:00
+build:
+  builder: pack
+  buildEnvs:
+  - name: BP_NODE_RUN_SCRIPTS
+    value: build
+  pvcSize: 256Mi
+run:
+  envs:
+  - name: MONGODB_CONNECTION
+    value: '{{ secret:conf-mongodb-admin-slack-conf-admin:connectionString.standardSrv
+      }}'
+deploy:
+  namespace: mongodb
+  options:
+    scale:
+      min: 1

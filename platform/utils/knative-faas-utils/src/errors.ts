@@ -5,7 +5,7 @@ export interface ErrorLoggingOptions {
   statusCodeProperty?: string;
   messageProperty?: string;
   minStatusCode?: number;
-  logger: {
+  logger?: {
     error: (message: string) => void
   };
 }
@@ -27,14 +27,14 @@ export const logIfErrorAndReturn = <T>(
     ...options
   };
   if (result instanceof CloudEvent && (result.data instanceof Error || result.type === options.errorType)) {
-    opts.logger.error(JSON.stringify(result.data));
+    opts.logger.error(JSON.stringify(result));
   } else if (
     result &&
     typeof result === 'object' &&
     typeof result[opts.statusCodeProperty] in ['string', 'number'] &&
     parseInt(result[opts.statusCodeProperty]) >= opts.minStatusCode
   ) {
-    opts.logger.error(JSON.stringify(result[opts.messageProperty]))
+    opts.logger.error(`${result[opts.messageProperty]}: ${JSON.stringify(result[opts.messageProperty])}`)
   }
   return result;
 };
