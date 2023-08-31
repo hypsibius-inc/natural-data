@@ -3,7 +3,7 @@ name: slack-events
 runtime: typescript
 registry: localhost:5000/
 image: localhost:5000/slack-events:latest
-imageDigest: sha256:661b0f32858362eea6fae88ffbdcc5a2a31f40cd3a0e16054708292c6cea2fa5
+imageDigest: sha256:7f537877d9afb235bf5e08002a45bc726e6183908c6795fb2ae4daa873a76f4f
 created: 2023-07-11T12:04:55.760078359-06:00
 build:
   builder: pack

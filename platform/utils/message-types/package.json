@@ -17,7 +17,8 @@
   "exports": {
     ".": "./build/index.js",
     "./mongo": "./build/mongo/index.js",
-    "./utils": "./build/utils/index.js"
+    "./utils": "./build/utils/index.js",
+    "./ai": "./build/ai/index.js"
   },
   "typesVersions": {
     "*": {
@@ -26,6 +27,9 @@
       ],
       "utils": [
         "build/utils/index.d.ts"
+      ],
+      "ai": [
+        "build/ai/index.d.ts"
       ]
     }
   },

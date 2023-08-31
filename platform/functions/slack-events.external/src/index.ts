@@ -16,7 +16,8 @@ const appToken = getEnvVarOrThrow('SLACK_APP_TOKEN');
 const scopes = getEnvVarOrThrow('SLACK_APP_SCOPES');
 
 const installationServiceURL =
-  process.env.INSTALLATION_SVC_URL || 'http://slack-mongo-installation-manager.mongodb.svc.cluster.local';
+  process.env.INSTALLATION_SVC_URL ||
+  'http://slack-mongo-installation-manager.mongodb.svc.cluster.local';
 
 const publish = getPublishFunction<HypsibiusEvent>();
 let receiver: FaaSJSReceiver;
@@ -49,12 +50,15 @@ function initialize(context: Context): FaaSJSReceiver {
     });
     handleEvents(app, logger, publish);
     handleActions(app, logger, publish);
-    handleViews(app, logger, publish);
+    handleViews(app, logger);
   }
   return receiver;
 }
 
-const handle = async (context: Context, body: Record<string, unknown> | string): Promise<StructuredReturn> => {
+const handle = async (
+  context: Context,
+  body: Record<string, unknown> | string
+): Promise<StructuredReturn> => {
   return await initialize(context).handle(context, body);
 };
 

@@ -3,7 +3,7 @@ name: mongo-manager
 runtime: typescript
 registry: localhost:5000/
 image: localhost:5000/mongo-manager:latest
-imageDigest: sha256:61a5d6b80efda3d28287da4a85f46dc88417abcccabff5a1bfe387986a35b49d
+imageDigest: sha256:825402de22cd25faf0889e7ddfaf8c5726cde172602d08713ce585bceed2e843
 created: 2023-07-13T20:17:44.531303169-06:00
 build:
   builder: pack

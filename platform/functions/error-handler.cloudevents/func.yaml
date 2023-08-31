@@ -3,7 +3,7 @@ name: error-handler
 runtime: typescript
 registry: localhost:5000/
 image: localhost:5000/error-handler:latest
-imageDigest: sha256:389e43c0949b51754733dad5abb191c30142aa017d0b8750944d37475c3fe4f8
+imageDigest: sha256:b581419841061d2648cf9ef487abc638494984dea2a3bbaca4ae1c2503d0f29f
 created: 2023-07-19T10:08:31.488671707-06:00
 invoke: cloudevent
 build:

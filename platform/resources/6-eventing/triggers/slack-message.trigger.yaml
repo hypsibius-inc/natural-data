@@ -1,0 +1,16 @@
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: slack-message
+  namespace: eventing
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: slack.event.message
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: slack-label-message
+      namespace: ai

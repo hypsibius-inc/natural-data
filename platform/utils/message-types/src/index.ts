@@ -1,4 +1,12 @@
-import { Installation, BasicElementAction, BlockAction, BlockElementAction, Context, EventFromType, SlackEvent } from '@slack/bolt';
+import {
+  BasicElementAction,
+  BlockAction,
+  BlockElementAction,
+  Context,
+  EventFromType,
+  Installation,
+  SlackEvent
+} from '@slack/bolt';
 import { ChatPostMessageArguments, ChatPostMessageResponse, WebClientOptions } from '@slack/web-api';
 import { User as SlackUser } from '@slack/web-api/dist/response/UsersInfoResponse';
 import { Channel, User } from './mongo';
@@ -6,6 +14,11 @@ import { ArrayElement } from './utils';
 
 export interface BaseHypsibiusEvent<T extends string = string> {
   type: T;
+}
+
+export interface ExtraHypsibiusEvent<X, E = Record<string, X>, T extends string = string>
+  extends BaseHypsibiusEvent<T> {
+  extra?: E;
 }
 
 export interface ErrorEvent extends BaseHypsibiusEvent<'hypsibius.error'> {
@@ -52,24 +65,36 @@ export interface MongoBaseRequest<S extends string, T extends string> {
   type: T;
 }
 export interface UserBaseRequest<T extends string> extends MongoBaseRequest<'User', T> {
-  userId: string;
   teamOrgId: string;
+}
+export interface SingleUserBaseRequest<T extends string> extends UserBaseRequest<T> {
+  userId: string;
 }
 export interface ChannelBaseRequest<T extends string> extends MongoBaseRequest<'Channel', T> {
   teamId: string;
+}
+export interface ChannelFindRequest extends ChannelBaseRequest<'find'> {
   activeBot?: boolean;
   archived?: boolean;
   users?: string | string[];
-}
-export interface ChannelGetRequest extends ChannelBaseRequest<'get'> {
   projection?: Record<string | keyof Channel, string | boolean | number>;
   population?: (string | keyof Channel)[];
 }
-export interface UserGetRequest extends UserBaseRequest<'get'> {
+export interface ChannelGetRequest extends ChannelBaseRequest<'get'> {
+  channelId: string;
+  projection?: Record<string | keyof Channel, string | boolean | number>;
+  population?: (string | keyof Channel)[];
+}
+export interface UserGetRequest extends SingleUserBaseRequest<'get'> {
   projection?: Record<string | keyof User, string | boolean | number>;
   population?: (string | keyof User)[];
 }
-export type UserUpdateLabelsRequest = UserBaseRequest<'update'> & {
+export interface UsersGetByChannelRequest extends SingleUserBaseRequest<'getByChannel'> {
+  channelObjectId: string;
+  projection?: Record<string | keyof User, string | boolean | number>;
+  population?: (string | keyof User)[];
+}
+export type UserUpdateLabelsRequest = SingleUserBaseRequest<'update'> & {
   labels?: (Partial<Omit<ArrayElement<NonNullable<User['labels']>>, 'alertConfig' | 'id'>> & {
     id: string;
     alertConfig?: (Partial<ArrayElement<NonNullable<ArrayElement<NonNullable<User['labels']>>['alertConfig']>>> & {
@@ -79,8 +104,8 @@ export type UserUpdateLabelsRequest = UserBaseRequest<'update'> & {
   })[];
   deleteLabelsById?: string[];
 };
-export type UserRequest = UserGetRequest | UserUpdateLabelsRequest;
-export type ChannelRequest = ChannelGetRequest;
+export type UserRequest = UserGetRequest | UserUpdateLabelsRequest | UsersGetByChannelRequest;
+export type ChannelRequest = ChannelGetRequest | ChannelFindRequest;
 export type MongoRequest = UserRequest | ChannelRequest;
 export type InstallationRequest = {
   id: string;
@@ -115,16 +140,39 @@ export interface SlackAppLeftChannel extends BaseHypsibiusEvent<'hypsibius.slack
   members: string[];
 }
 
-export type HypsibiusEvent =
-  | ErrorEvent
-  | SlackAppInstallationSuccess
-  | SlackUserInstalledApp
-  | SlackAppJoinedChannel
-  | SlackAppLeftChannel
-  | SlackSendMessage
-  | SlackSendMessageResponse
-  | HypsibiusSlackEvent
-  | HypsibiusSlackBlockAction;
+export interface LabelledSlackMessage extends WebClientEvent<'hypsibius.slack.labelled_message'> {
+  teamId: string;
+  channelId: string;
+  senderId: string;
+  userId: string;
+  ts: string;
+  text: string;
+  labels: Record<string, number>;
+}
+
+// export interface LabelTextRequest<X, E = Record<string, X>, C extends Classifiers = Classifiers>
+//   extends ExtraHypsibiusEvent<X, E, 'hypsibius.ai.label_text'>,
+//     TextClassificationRequest<C> {}
+
+// export interface LabelTextResponse<X, E = Record<string, X>, C extends Classifiers = Classifiers>
+//   extends ExtraHypsibiusEvent<X, E, 'hypsibius.ai.labelled_text'> {
+//   request: LabelTextRequest<X, E, C>;
+//   labels: Record<string, number>;
+// }
+
+export type HypsibiusEvent = // <X = unknown, E = Record<string, X>> =
+    | ErrorEvent
+    | SlackAppInstallationSuccess
+    | SlackUserInstalledApp
+    | SlackAppJoinedChannel
+    | SlackAppLeftChannel
+    | SlackSendMessage
+    | SlackSendMessageResponse
+    | HypsibiusSlackEvent
+    | HypsibiusSlackBlockAction
+    | LabelledSlackMessage;
+// | LabelTextRequest<X, E>
+// | LabelTextResponse<X, E>;
 
 export type HypsibiusEventFromType<Type extends HypsibiusEvent['type']> = Extract<
   HypsibiusEvent,
