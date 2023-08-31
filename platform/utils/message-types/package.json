@@ -45,6 +45,6 @@
     "@slack/bolt": "^3.13.2",
     "@slack/oauth": "^2.6.1",
     "@slack/web-api": "^6.9.0",
-    "mongoose": "^7.4.1"
+    "mongoose": "^7.5.0"
   }
 }
