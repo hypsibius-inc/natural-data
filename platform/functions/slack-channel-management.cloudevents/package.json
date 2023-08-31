@@ -41,6 +41,6 @@
     "@types/node": "^16.11.12",
     "cloudevents": "^7.0.2",
     "faas-js-runtime": "^1.1.0",
-    "mongoose": "^7.4.1"
+    "mongoose": "^7.5.0"
   }
 }
