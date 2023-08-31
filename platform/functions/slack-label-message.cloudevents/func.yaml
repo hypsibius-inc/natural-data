@@ -1,0 +1,20 @@
+specVersion: 0.35.0
+name: slack-label-message
+runtime: typescript
+registry: localhost:5000/
+image: localhost:5000/slack-label-message:latest
+imageDigest: sha256:081efaabe123f6c29a0ab78512691711b9c6273c455106e0ac41d87fcdb89ae2
+created: 2023-08-30T11:49:03.172787958-07:00
+invoke: cloudevent
+build:
+  builder: pack
+  buildEnvs:
+  - name: BP_NODE_PROJECT_PATH
+    value: ./
+  - name: NODE_PROJECT_PATH
+    value: ./
+  - name: BP_NODE_RUN_SCRIPTS
+    value: build
+  pvcSize: 256Mi
+deploy:
+  namespace: ai

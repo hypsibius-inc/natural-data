@@ -19,7 +19,11 @@ const getUserFromContext = async (context: SlackContext): Promise<User> => {
   });
 };
 
-export const handleActions = (app: App, logger: SlackLogger, publish: PublishFunction<HypsibiusEvent>): void => {
+export const handleActions = (
+  app: App,
+  logger: SlackLogger,
+  publish: PublishFunction<HypsibiusEvent>
+): void => {
   app.action(/.*/gm, async ({ body, action, context, ack, client }) => {
     await ack();
     switch (body.type) {
@@ -45,13 +49,20 @@ export const handleActions = (app: App, logger: SlackLogger, publish: PublishFun
         if (p.action_id === 'labels.delete') {
           const deleteModalViewOpen = await client.views.open({
             trigger_id: body.trigger_id,
-            view: getDeleteModal('labels', 'delete.labels', (await getUserFromContext(context)).labels || [])
+            view: getDeleteModal(
+              'labels',
+              'delete.labels',
+              (await getUserFromContext(context)).labels || []
+            )
           });
           if (!deleteModalViewOpen.ok) {
-            throw Error(`Couldn't open DeleteLabels view because: ${deleteModalViewOpen.error}`);
+            throw Error(
+              `Couldn't open DeleteLabels view because: ${deleteModalViewOpen.error}`
+            );
           }
         }
-        const isDeleteAlerts = /label\.(?<labelId>.+?)\.alerts\.delete/gimy.exec(p.action_id);
+        const isDeleteAlerts =
+          /label\.(?<labelId>.+?)\.alerts\.delete/gimy.exec(p.action_id);
         if (isDeleteAlerts) {
           const labelId = isDeleteAlerts.groups?.labelId;
           const user = await getUserFromContext(context);
@@ -63,23 +74,41 @@ export const handleActions = (app: App, logger: SlackLogger, publish: PublishFun
             }));
           const deleteModalViewOpen = await client.views.push({
             trigger_id: body.trigger_id,
-            view: getDeleteModal('alerts', `delete.label.${labelId}.alerts`, alerts || [])
+            view: getDeleteModal(
+              'alerts',
+              `delete.label.${labelId}.alerts`,
+              alerts || []
+            )
           });
           if (!deleteModalViewOpen.ok) {
-            throw Error(`Couldn't open DeleteLabels view because: ${deleteModalViewOpen.error}`);
+            throw Error(
+              `Couldn't open DeleteLabels view because: ${deleteModalViewOpen.error}`
+            );
           }
         }
-        const isEditAlert = /label\.(?<labelId>.+?)\.alerts\.edit\.(?<index>-?[0-9]+)/gimy.exec(p.action_id);
+        const isEditAlert =
+          /label\.(?<labelId>.+?)\.alerts\.edit\.(?<index>-?[0-9]+)/gimy.exec(
+            p.action_id
+          );
         if (isEditAlert || p.action_id.startsWith('label.edit.')) {
-          const labelId = isEditAlert?.groups?.labelId ?? p.action_id.slice('label.edit.'.length);
+          const labelId =
+            isEditAlert?.groups?.labelId ??
+            p.action_id.slice('label.edit.'.length);
           const label:
             | {
                 id: string;
                 name: string;
                 description?: string | undefined;
-                alertConfig?: { summarizeAbove: number; onceInType: OnceIn; onceInValue: number; startOn: Date }[];
+                alertConfig?: {
+                  summarizeAbove: number;
+                  onceInType: OnceIn;
+                  onceInValue: number;
+                  startOn: Date;
+                }[];
               }
-            | undefined = (await getUserFromContext(context)).labels?.find(({ id }) => id === labelId);
+            | undefined = (await getUserFromContext(context)).labels?.find(
+            ({ id }) => id === labelId
+          );
           if (labelId !== '$' && !label) {
             throw Error(
               `Couldn't find label ${labelId} for ${{
@@ -95,7 +124,9 @@ export const handleActions = (app: App, logger: SlackLogger, publish: PublishFun
                 view: getLabelEditModal(label)
               });
               if (!viewOpenRes.ok) {
-                throw Error(`Couldn't open Label{${labelId}} view because: ${viewOpenRes.error}`);
+                throw Error(
+                  `Couldn't open Label{${labelId}} view because: ${viewOpenRes.error}`
+                );
               }
             } else {
               throw Error(`UserID is not defined`);
@@ -110,7 +141,9 @@ export const handleActions = (app: App, logger: SlackLogger, publish: PublishFun
               })
             });
             if (!viewPushRes.ok) {
-              throw Error(`Couldn't push Label{${labelId}}Alert[${index}] view because: ${viewPushRes.error}`);
+              throw Error(
+                `Couldn't push Label{${labelId}}Alert[${index}] view because: ${viewPushRes.error}`
+              );
             }
           }
         }

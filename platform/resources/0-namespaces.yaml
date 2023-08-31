@@ -29,6 +29,13 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: ai
+  labels:
+    name: ai
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: eventing
   labels:
     name: eventing

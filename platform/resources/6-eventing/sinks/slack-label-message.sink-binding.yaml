@@ -1,0 +1,19 @@
+apiVersion: sources.knative.dev/v1
+kind: SinkBinding
+metadata:
+  name: slack-label-message
+  namespace: ai
+spec:
+  subject:
+    apiVersion: apps/v1
+    kind: Deployment
+    namespace: ai
+    selector:
+      matchLabels:
+        function.knative.dev/name: slack-label-message
+  sink:
+    ref:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      name: default
+      namespace: eventing

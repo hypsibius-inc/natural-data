@@ -4,7 +4,11 @@ import { HypsibiusEvent } from '@hypsibius/message-types';
 import { App } from '@slack/bolt';
 import { buildHomeView } from './home-view';
 
-export const handleEvents = (app: App, logger: SlackLogger, publish: PublishFunction<HypsibiusEvent>): void => {
+export const handleEvents = (
+  app: App,
+  logger: SlackLogger,
+  publish: PublishFunction<HypsibiusEvent>
+): void => {
   app.event(/.*/gm, async ({ event, context }) => {
     logger.warn(
       `Published ${JSON.stringify(
@@ -30,9 +34,5 @@ export const handleEvents = (app: App, logger: SlackLogger, publish: PublishFunc
     if (!resp.ok) {
       throw Error(JSON.stringify(resp));
     }
-    client.chat.postMessage({
-      channel: event.channel,
-      text: `Hi <@${event.user}>`
-    });
   });
 };
