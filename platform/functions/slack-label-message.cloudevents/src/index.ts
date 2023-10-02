@@ -58,7 +58,7 @@ const handleUser = async (
 ): Promise<undefined> => {
   const userId = user.ids.find(({ teamOrgId }) => teamOrgId === channel.teamId);
   const zeroShotLabelsMap = Object.fromEntries(
-    user.labels?.map((l) => [l.description ?? l.name, l.name]) ?? []
+    user.labels?.map((l) => [l.description ?? l.name, l.id]) ?? []
   );
   const zeroShotLabels = Object.keys(zeroShotLabelsMap);
   if (!userId || !zeroShotLabels) {
@@ -96,6 +96,7 @@ const handleUser = async (
       text: messageData.text,
       ts: messageData.ts,
       userId: userId.userId,
+      userObjectId: user._id.toString(),
       webClientParams: {
         token
       },
