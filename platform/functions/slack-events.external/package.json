@@ -39,7 +39,7 @@
     "@hypsibius/message-types": "file:tarballs/hypsibius-message-types-0.0.18.tgz",
     "@slack/bolt": "^3.13.1",
     "@types/node": "^16.11.12",
-    "axios": "^1.4.0",
+    "axios": "^1.6.0",
     "faas-js-runtime": "^2.2.2",
     "node-mocks-http": "^1.12.2"
   }
