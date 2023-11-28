@@ -9,7 +9,7 @@ packages = [{include = "hypsibius_slack"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 slack-sdk = "^3.21.3"
-aiohttp = "^3.8.5"
+aiohttp = "^3.9.0"
 environ-config = "^23.2.0"
 slack-bolt = "^1.18.0"
 
